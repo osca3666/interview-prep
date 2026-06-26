@@ -71,6 +71,7 @@ export type Database = {
           notes: string
           pattern: string | null
           review_stage: number
+          schedule_version: number
           title: string
           updated_at: string
           user_id: string
@@ -87,6 +88,7 @@ export type Database = {
           notes?: string
           pattern?: string | null
           review_stage?: number
+          schedule_version?: number
           title: string
           updated_at?: string
           user_id: string
@@ -103,6 +105,7 @@ export type Database = {
           notes?: string
           pattern?: string | null
           review_stage?: number
+          schedule_version?: number
           title?: string
           updated_at?: string
           user_id?: string
@@ -114,7 +117,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      submit_problem_review: {
+        Args: {
+          p_expected_schedule_version: number
+          p_rating: string
+          p_user_problem_id: string
+        }
+        Returns: {
+          new_next_review_at: string
+          new_review_stage: number
+          new_schedule_version: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
