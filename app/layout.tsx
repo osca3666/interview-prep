@@ -55,6 +55,12 @@ export default function RootLayout({
                   Dashboard
                 </Link>
                 <Link
+                  href="/problems"
+                  className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
+                >
+                  Problems
+                </Link>
+                <Link
                   href="/sign-in"
                   className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
                 >
