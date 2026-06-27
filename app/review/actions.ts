@@ -103,5 +103,6 @@ export async function submitReviewAction(formData: FormData) {
 
   revalidatePath("/review");
   revalidatePath("/problems");
+  revalidatePath("/practice-history");
   redirect("/review?message=reviewed");
 }

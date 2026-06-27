@@ -32,7 +32,7 @@ export default function RootLayout({
         <div className="flex min-h-screen flex-col">
           <header className="border-b border-zinc-200 bg-white/85 backdrop-blur">
             <nav
-              className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-6 lg:px-8"
+              className="mx-auto flex min-h-16 w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-6 lg:px-8"
               aria-label="Main navigation"
             >
               <Link
@@ -41,7 +41,7 @@ export default function RootLayout({
               >
                 LeetCode Review
               </Link>
-              <div className="flex items-center gap-1 text-sm font-medium text-zinc-600">
+              <div className="flex flex-wrap items-center justify-end gap-1 text-sm font-medium text-zinc-600">
                 <Link
                   href="/"
                   className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
@@ -65,6 +65,12 @@ export default function RootLayout({
                   className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
                 >
                   Review
+                </Link>
+                <Link
+                  href="/practice-history"
+                  className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
+                >
+                  History
                 </Link>
                 <Link
                   href="/sign-in"

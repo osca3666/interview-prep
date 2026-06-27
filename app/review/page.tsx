@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { submitReviewAction } from "@/app/review/actions";
+import { MasteryBoxes } from "@/components/mastery-boxes";
 import { listDueProblems, type ReviewRating } from "@/data/reviews";
 import { createClient } from "@/lib/supabase/server";
 
@@ -166,6 +167,9 @@ export default async function ReviewPage({
                       <p className="mt-2 text-sm text-zinc-600">
                         {formatDueText(problem.next_review_at)}
                       </p>
+                      <div className="mt-3">
+                        <MasteryBoxes masteryScore={problem.mastery_score} />
+                      </div>
                       {problem.notes ? (
                         <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-zinc-700">
                           {problem.notes}
