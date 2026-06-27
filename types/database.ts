@@ -143,6 +143,27 @@ export type Database = {
           user_problem_id: string
         }[]
       }
+      create_user_problem_with_timezone: {
+        Args: {
+          p_difficulty: string
+          p_leetcode_slug: string
+          p_leetcode_url: string
+          p_notes: string
+          p_pattern: string
+          p_rating: string
+          p_start_date: string
+          p_start_mode: string
+          p_time_zone: string
+          p_title: string
+        }
+        Returns: {
+          mastery_score: number
+          next_review_at: string
+          review_stage: number
+          total_reviews: number
+          user_problem_id: string
+        }[]
+      }
       submit_problem_review: {
         Args: {
           p_expected_schedule_version: number
