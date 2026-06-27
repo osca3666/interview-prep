@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { addProblemAction } from "@/app/problems/actions";
+import { LocalDate } from "@/components/local-date";
+import { ProblemStartingStatusFields } from "@/components/problem-starting-status-fields";
 import { listUserProblems } from "@/data/problems";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,6 +29,12 @@ function getProblemError(value: string | string[] | undefined) {
       return "You already added this problem.";
     case "invalid_form":
       return "Check the problem details and try again.";
+    case "invalid_date":
+      return "Choose a valid date.";
+    case "invalid_rating":
+      return "Choose a valid starting rating.";
+    case "invalid_time_zone":
+      return "Could not detect a valid timezone. Please refresh and try again.";
     case "invalid_url":
       return "Enter a valid LeetCode problem URL.";
     case "save_failed":
@@ -34,13 +42,6 @@ function getProblemError(value: string | string[] | undefined) {
     default:
       return null;
   }
-}
-
-function formatReviewDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
 }
 
 export default async function ProblemsPage({
@@ -193,6 +194,8 @@ export default async function ProblemsPage({
                 />
               </div>
 
+              <ProblemStartingStatusFields />
+
               <button
                 type="submit"
                 className="inline-flex h-11 w-full items-center justify-center rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800"
@@ -253,7 +256,7 @@ export default async function ProblemsPage({
                       </a>
                     </div>
                     <p className="mt-3 text-sm text-zinc-600">
-                      Next review: {formatReviewDate(problem.next_review_at)}
+                      Next review: <LocalDate value={problem.next_review_at} />
                     </p>
                   </li>
                 ))}

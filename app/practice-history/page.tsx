@@ -1,18 +1,8 @@
 import { redirect } from "next/navigation";
+import { LocalDate } from "@/components/local-date";
 import { MasteryBoxes } from "@/components/mastery-boxes";
 import { listPracticeHistory } from "@/data/practice-history";
 import { createClient } from "@/lib/supabase/server";
-
-function formatLastSubmitted(value: string | null) {
-  if (!value) {
-    return "Never";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
 
 export default async function PracticeHistoryPage() {
   const supabase = await createClient();
@@ -107,7 +97,10 @@ export default async function PracticeHistoryPage() {
                         <MasteryBoxes masteryScore={problem.mastery_score} />
                       </td>
                       <td className="px-5 py-4 text-zinc-600">
-                        {formatLastSubmitted(problem.last_reviewed_at)}
+                        <LocalDate
+                          value={problem.last_reviewed_at}
+                          fallback="Never"
+                        />
                       </td>
                       <td className="px-5 py-4 font-medium text-zinc-800">
                         {problem.total_reviews}

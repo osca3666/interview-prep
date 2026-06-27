@@ -1,11 +1,12 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, Tables, TablesInsert } from "@/types/database";
+import type { Database, Tables } from "@/types/database";
 
 export type UserProblem = Tables<"user_problems">;
-export type UserProblemInsert = TablesInsert<"user_problems">;
 export type TypedSupabaseClient = SupabaseClient<Database>;
+export type CreateUserProblemArgs =
+  Database["public"]["Functions"]["create_user_problem_with_timezone"]["Args"];
 
 export async function listUserProblems(
   supabase: TypedSupabaseClient,
@@ -20,9 +21,9 @@ export async function listUserProblems(
     .order("created_at", { ascending: false });
 }
 
-export async function insertUserProblem(
+export async function createUserProblem(
   supabase: TypedSupabaseClient,
-  problem: UserProblemInsert,
+  problem: CreateUserProblemArgs,
 ) {
-  return supabase.from("user_problems").insert(problem);
+  return supabase.rpc("create_user_problem_with_timezone", problem);
 }

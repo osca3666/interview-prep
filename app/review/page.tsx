@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { submitReviewAction } from "@/app/review/actions";
-import { MasteryBoxes } from "@/components/mastery-boxes";
+import { DueDateText } from "@/components/due-date-text";
 import { listDueProblems, type ReviewRating } from "@/data/reviews";
 import { createClient } from "@/lib/supabase/server";
 
@@ -10,10 +10,9 @@ type SearchParams = Promise<{
 }>;
 
 const ratings: Array<{ value: ReviewRating; label: string }> = [
-  { value: "again", label: "Again" },
-  { value: "hard", label: "Hard" },
-  { value: "good", label: "Good" },
-  { value: "easy", label: "Easy" },
+  { value: "again", label: "Redo" },
+  { value: "good", label: "OK" },
+  { value: "easy", label: "Great" },
 ];
 
 function getFirstParam(value: string | string[] | undefined) {
@@ -43,35 +42,6 @@ function getReviewError(value: string | string[] | undefined) {
     default:
       return null;
   }
-}
-
-function formatDueText(value: string) {
-  const dueDate = new Date(value);
-  const now = Date.now();
-  const diffMs = now - dueDate.getTime();
-  const formatted = new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(dueDate);
-
-  if (diffMs < 60_000) {
-    return `Due now (${formatted})`;
-  }
-
-  const days = Math.floor(diffMs / 86_400_000);
-
-  if (days >= 1) {
-    return `Overdue by ${days} ${days === 1 ? "day" : "days"} (${formatted})`;
-  }
-
-  const hours = Math.floor(diffMs / 3_600_000);
-
-  if (hours >= 1) {
-    return `Overdue by ${hours} ${hours === 1 ? "hour" : "hours"} (${formatted})`;
-  }
-
-  const minutes = Math.max(1, Math.floor(diffMs / 60_000));
-  return `Overdue by ${minutes} ${minutes === 1 ? "minute" : "minutes"} (${formatted})`;
 }
 
 export default async function ReviewPage({
@@ -155,6 +125,41 @@ export default async function ReviewPage({
                         <h3 className="font-semibold text-zinc-950">
                           {problem.title}
                         </h3>
+                        <a
+                          href={problem.leetcode_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open ${problem.title} on LeetCode`}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            className="h-4 w-4"
+                          >
+                            <path
+                              d="M7.5 5.5h7v7"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M14.5 5.5 6 14"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                            />
+                            <path
+                              d="M12.5 14.5h-7v-7"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </a>
                         <span className="rounded-md bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700">
                           {problem.difficulty}
                         </span>
@@ -165,24 +170,13 @@ export default async function ReviewPage({
                         ) : null}
                       </div>
                       <p className="mt-2 text-sm text-zinc-600">
-                        {formatDueText(problem.next_review_at)}
+                        <DueDateText value={problem.next_review_at} />
                       </p>
-                      <div className="mt-3">
-                        <MasteryBoxes masteryScore={problem.mastery_score} />
-                      </div>
                       {problem.notes ? (
                         <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-zinc-700">
                           {problem.notes}
                         </p>
                       ) : null}
-                      <a
-                        href={problem.leetcode_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-3 inline-flex text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline"
-                      >
-                        Open on LeetCode
-                      </a>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:justify-end">
