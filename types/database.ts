@@ -67,12 +67,14 @@ export type Database = {
           leetcode_slug: string
           leetcode_url: string
           lifecycle_state: string
+          mastery_score: number
           next_review_at: string
           notes: string
           pattern: string | null
           review_stage: number
           schedule_version: number
           title: string
+          total_reviews: number
           updated_at: string
           user_id: string
         }
@@ -84,12 +86,14 @@ export type Database = {
           leetcode_slug: string
           leetcode_url: string
           lifecycle_state?: string
+          mastery_score?: number
           next_review_at?: string
           notes?: string
           pattern?: string | null
           review_stage?: number
           schedule_version?: number
           title: string
+          total_reviews?: number
           updated_at?: string
           user_id: string
         }
@@ -101,12 +105,14 @@ export type Database = {
           leetcode_slug?: string
           leetcode_url?: string
           lifecycle_state?: string
+          mastery_score?: number
           next_review_at?: string
           notes?: string
           pattern?: string | null
           review_stage?: number
           schedule_version?: number
           title?: string
+          total_reviews?: number
           updated_at?: string
           user_id?: string
         }

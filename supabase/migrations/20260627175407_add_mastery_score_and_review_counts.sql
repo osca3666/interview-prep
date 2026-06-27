@@ -10,7 +10,7 @@ set
     where review_event.user_problem_id = user_problem.id
       and review_event.user_id = user_problem.user_id
   ),
-  mastery_score = pg_catalog.least(10, user_problem.review_stage * 2);
+  mastery_score = least(10, user_problem.review_stage * 2);
 
 alter table public.user_problems
   add constraint user_problems_mastery_score_check
@@ -109,10 +109,10 @@ begin
   v_new_schedule_version := v_problem.schedule_version + 1;
 
   v_new_mastery_score := case p_rating
-    when 'again' then pg_catalog.greatest(0, v_problem.mastery_score - 2)
-    when 'hard' then pg_catalog.least(10, v_problem.mastery_score + 1)
-    when 'good' then pg_catalog.least(10, v_problem.mastery_score + 2)
-    when 'easy' then pg_catalog.least(10, v_problem.mastery_score + 3)
+    when 'again' then greatest(0, v_problem.mastery_score - 2)
+    when 'hard' then least(10, v_problem.mastery_score + 1)
+    when 'good' then least(10, v_problem.mastery_score + 2)
+    when 'easy' then least(10, v_problem.mastery_score + 3)
   end;
 
   v_new_total_reviews := v_problem.total_reviews + 1;
