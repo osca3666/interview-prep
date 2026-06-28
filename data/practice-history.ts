@@ -9,8 +9,10 @@ export type PracticeHistoryProblem = Pick<
   | "title"
   | "difficulty"
   | "leetcode_url"
+  | "pattern"
   | "mastery_score"
   | "last_reviewed_at"
+  | "next_review_at"
   | "total_reviews"
 >;
 
@@ -23,7 +25,7 @@ export async function listPracticeHistory(
   return supabase
     .from("user_problems")
     .select(
-      "id,title,difficulty,leetcode_url,mastery_score,last_reviewed_at,total_reviews",
+      "id,title,difficulty,leetcode_url,pattern,mastery_score,last_reviewed_at,next_review_at,total_reviews",
     )
     .eq("user_id", userId)
     .order("last_reviewed_at", { ascending: false, nullsFirst: false });
