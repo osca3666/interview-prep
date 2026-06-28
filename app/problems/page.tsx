@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
-import { addProblemAction } from "@/app/problems/actions";
+import { AddProblemForm } from "@/components/add-problem-form";
 import { LocalDate } from "@/components/local-date";
-import { ProblemStartingStatusFields } from "@/components/problem-starting-status-fields";
 import { listUserProblems } from "@/data/problems";
 import { createClient } from "@/lib/supabase/server";
 
@@ -99,111 +98,7 @@ export default async function ProblemsPage({
         ) : null}
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,400px)_1fr]">
-          <form
-            action={addProblemAction}
-            className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm"
-          >
-            <h2 className="text-base font-semibold text-zinc-950">
-              Add problem
-            </h2>
-            <div className="mt-5 space-y-5">
-              <div>
-                <label
-                  htmlFor="leetcode_url"
-                  className="block text-sm font-medium text-zinc-700"
-                >
-                  LeetCode URL
-                </label>
-                <input
-                  id="leetcode_url"
-                  name="leetcode_url"
-                  type="url"
-                  required
-                  placeholder="https://leetcode.com/problems/two-sum/"
-                  className="mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="title"
-                  className="block text-sm font-medium text-zinc-700"
-                >
-                  Title
-                </label>
-                <input
-                  id="title"
-                  name="title"
-                  type="text"
-                  required
-                  maxLength={160}
-                  className="mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="difficulty"
-                  className="block text-sm font-medium text-zinc-700"
-                >
-                  Difficulty
-                </label>
-                <select
-                  id="difficulty"
-                  name="difficulty"
-                  required
-                  defaultValue="medium"
-                  className="mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
-                >
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="pattern"
-                  className="block text-sm font-medium text-zinc-700"
-                >
-                  Pattern
-                </label>
-                <input
-                  id="pattern"
-                  name="pattern"
-                  type="text"
-                  maxLength={80}
-                  placeholder="Two pointers"
-                  className="mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="notes"
-                  className="block text-sm font-medium text-zinc-700"
-                >
-                  Notes
-                </label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  maxLength={4000}
-                  rows={5}
-                  className="mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
-                />
-              </div>
-
-              <ProblemStartingStatusFields />
-
-              <button
-                type="submit"
-                className="inline-flex h-11 w-full items-center justify-center rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800"
-              >
-                Add problem
-              </button>
-            </div>
-          </form>
+          <AddProblemForm returnTo="/problems" />
 
           <div className="rounded-lg border border-zinc-200 bg-white shadow-sm">
             <div className="border-b border-zinc-200 px-5 py-4">

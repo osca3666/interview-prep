@@ -61,18 +61,6 @@ export default function RootLayout({
                   Problems
                 </Link>
                 <Link
-                  href="/review"
-                  className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
-                >
-                  Review
-                </Link>
-                <Link
-                  href="/practice-history"
-                  className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
-                >
-                  History
-                </Link>
-                <Link
                   href="/sign-in"
                   className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
                 >

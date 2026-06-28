@@ -20,6 +20,7 @@ export function ProblemStartingStatusFields() {
   const [startMode, setStartMode] = useState<"practiced" | "scheduled">(
     "practiced",
   );
+  const [todayLocalDate, setTodayLocalDate] = useState("");
   const [practiceDate, setPracticeDate] = useState("");
   const [firstReviewDate, setFirstReviewDate] = useState("");
   const [timeZone, setTimeZone] = useState("");
@@ -27,6 +28,7 @@ export function ProblemStartingStatusFields() {
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       const today = getLocalDateInputValue();
+      setTodayLocalDate(today);
       setPracticeDate(today);
       setFirstReviewDate(today);
 
@@ -82,7 +84,7 @@ export function ProblemStartingStatusFields() {
                 type="date"
                 required
                 value={practiceDate}
-                max={practiceDate}
+                max={todayLocalDate}
                 onChange={(event) => setPracticeDate(event.target.value)}
                 className="mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
               />
@@ -146,6 +148,7 @@ export function ProblemStartingStatusFields() {
               type="date"
               required
               value={firstReviewDate}
+              min={todayLocalDate}
               onChange={(event) => setFirstReviewDate(event.target.value)}
               className="mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
             />

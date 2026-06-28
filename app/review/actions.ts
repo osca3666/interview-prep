@@ -17,6 +17,7 @@ const controlledRpcMessages = new Set([
   "invalid_rating",
   "not_authenticated",
 ]);
+const allowedReturnPaths = new Set(["/dashboard", "/review"]);
 
 type DatabaseError = {
   code?: string;
@@ -35,6 +36,11 @@ function parseExpectedVersion(value: string) {
 
   const parsed = Number(value);
   return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+function getReturnPath(formData: FormData) {
+  const value = getStringField(formData, "return_to");
+  return allowedReturnPaths.has(value) ? value : "/review";
 }
 
 function getControlledRpcMessage(error: DatabaseError) {
@@ -58,6 +64,7 @@ function logReviewError(error: DatabaseError) {
 }
 
 export async function submitReviewAction(formData: FormData) {
+  const returnTo = getReturnPath(formData);
   const userProblemId = getStringField(formData, "user_problem_id");
   const rating = getStringField(formData, "rating") as ReviewRating;
   const expectedScheduleVersion = parseExpectedVersion(
@@ -69,7 +76,7 @@ export async function submitReviewAction(formData: FormData) {
     !validRatings.has(rating) ||
     expectedScheduleVersion === null
   ) {
-    redirect("/review?error=invalid_submission");
+    redirect(`${returnTo}?error=invalid_submission`);
   }
 
   const supabase = await createClient();
@@ -95,14 +102,15 @@ export async function submitReviewAction(formData: FormData) {
     }
 
     if (controlledMessage) {
-      redirect(`/review?error=${controlledMessage}`);
+      redirect(`${returnTo}?error=${controlledMessage}`);
     }
 
-    redirect("/review?error=save_failed");
+    redirect(`${returnTo}?error=save_failed`);
   }
 
+  revalidatePath("/dashboard");
   revalidatePath("/review");
   revalidatePath("/problems");
   revalidatePath("/practice-history");
-  redirect("/review?message=reviewed");
+  redirect(`${returnTo}?message=reviewed`);
 }

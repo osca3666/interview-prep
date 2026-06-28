@@ -20,6 +20,7 @@ const controlledRpcMessages = new Set([
   "invalid_time_zone",
   "duplicate_problem",
 ]);
+const allowedReturnPaths = new Set(["/dashboard", "/problems"]);
 
 type DatabaseError = {
   code?: string;
@@ -64,6 +65,11 @@ function getDateOnlyInTimeZone(date: Date, timeZone: string) {
   return `${year}-${month}-${day}`;
 }
 
+function getReturnPath(formData: FormData) {
+  const value = getTrimmedField(formData, "return_to");
+  return allowedReturnPaths.has(value) ? value : "/problems";
+}
+
 function isValidTimeZone(value: string) {
   if (!value) {
     return false;
@@ -98,6 +104,7 @@ function logProblemSaveError(error: DatabaseError) {
 }
 
 export async function addProblemAction(formData: FormData) {
+  const returnTo = getReturnPath(formData);
   const supabase = await createClient();
   const { data, error: claimsError } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
@@ -119,7 +126,7 @@ export async function addProblemAction(formData: FormData) {
   const parsedUrl = parseLeetCodeProblemUrl(rawUrl);
 
   if (!parsedUrl) {
-    redirect("/problems?error=invalid_url");
+    redirect(`${returnTo}?error=invalid_url`);
   }
 
   if (
@@ -130,29 +137,37 @@ export async function addProblemAction(formData: FormData) {
     notes.length > notesMaxLength ||
     !validStartModes.has(startMode)
   ) {
-    redirect("/problems?error=invalid_form");
+    redirect(`${returnTo}?error=invalid_form`);
   }
 
   const startDate = startMode === "practiced" ? practiceDate : firstReviewDate;
 
   if (!isValidDateOnly(startDate)) {
-    redirect("/problems?error=invalid_date");
+    redirect(`${returnTo}?error=invalid_date`);
   }
 
   if (!isValidTimeZone(timeZone)) {
-    redirect("/problems?error=invalid_time_zone");
+    redirect(`${returnTo}?error=invalid_time_zone`);
+  }
+
+  const todayInUserTimeZone = getDateOnlyInTimeZone(new Date(), timeZone);
+
+  if (!todayInUserTimeZone) {
+    redirect(`${returnTo}?error=invalid_date`);
   }
 
   if (startMode === "practiced") {
     if (!validRatings.has(rating)) {
-      redirect("/problems?error=invalid_rating");
+      redirect(`${returnTo}?error=invalid_rating`);
     }
 
-    const todayInUserTimeZone = getDateOnlyInTimeZone(new Date(), timeZone);
-
-    if (!todayInUserTimeZone || startDate > todayInUserTimeZone) {
-      redirect("/problems?error=invalid_date");
+    if (startDate > todayInUserTimeZone) {
+      redirect(`${returnTo}?error=invalid_date`);
     }
+  }
+
+  if (startMode === "scheduled" && startDate < todayInUserTimeZone) {
+    redirect(`${returnTo}?error=invalid_date`);
   }
 
   const { error } = await createUserProblem(supabase, {
@@ -178,30 +193,31 @@ export async function addProblemAction(formData: FormData) {
     }
 
     if (controlledMessage === "duplicate_problem") {
-      redirect("/problems?error=already_added");
+      redirect(`${returnTo}?error=already_added`);
     }
 
     if (controlledMessage === "invalid_rating") {
-      redirect("/problems?error=invalid_rating");
+      redirect(`${returnTo}?error=invalid_rating`);
     }
 
     if (controlledMessage === "invalid_date") {
-      redirect("/problems?error=invalid_date");
+      redirect(`${returnTo}?error=invalid_date`);
     }
 
     if (controlledMessage === "invalid_time_zone") {
-      redirect("/problems?error=invalid_time_zone");
+      redirect(`${returnTo}?error=invalid_time_zone`);
     }
 
     if (controlledMessage === "invalid_start_mode") {
-      redirect("/problems?error=invalid_form");
+      redirect(`${returnTo}?error=invalid_form`);
     }
 
-    redirect("/problems?error=save_failed");
+    redirect(`${returnTo}?error=save_failed`);
   }
 
+  revalidatePath("/dashboard");
   revalidatePath("/problems");
   revalidatePath("/review");
   revalidatePath("/practice-history");
-  redirect("/problems?message=added");
+  redirect(`${returnTo}?message=added`);
 }

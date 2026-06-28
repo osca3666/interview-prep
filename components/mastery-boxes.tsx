@@ -17,7 +17,7 @@ export function MasteryBoxes({ masteryScore }: MasteryBoxesProps) {
             <span
               key={index}
               className={[
-                "h-3 w-6 rounded-sm border transition",
+                "h-3 w-3 rounded-sm border transition",
                 isFilled
                   ? "border-emerald-600 bg-emerald-500"
                   : "border-zinc-300 bg-white",
