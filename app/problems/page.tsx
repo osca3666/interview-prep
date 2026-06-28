@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { AddProblemForm } from "@/components/add-problem-form";
 import { LocalDate } from "@/components/local-date";
+import { ToastMessage } from "@/components/toast-message";
 import { listUserProblems } from "@/data/problems";
 import { createClient } from "@/lib/supabase/server";
 
@@ -86,15 +88,25 @@ export default async function ProblemsPage({
         </div>
 
         {pageMessage ? (
-          <div className="mt-6 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            {pageMessage}
-          </div>
+          <Suspense fallback={null}>
+            <ToastMessage
+              key={`message-${getFirstParam(message) ?? pageMessage}`}
+              message={pageMessage}
+              queryKey={getFirstParam(message) ?? ""}
+              tone="success"
+            />
+          </Suspense>
         ) : null}
 
         {pageError ? (
-          <div className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {pageError}
-          </div>
+          <Suspense fallback={null}>
+            <ToastMessage
+              key={`error-${getFirstParam(error) ?? pageError}`}
+              message={pageError}
+              queryKey={getFirstParam(error) ?? ""}
+              tone="error"
+            />
+          </Suspense>
         ) : null}
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,400px)_1fr]">

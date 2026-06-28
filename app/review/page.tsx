@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { ReviewQueueSection } from "@/components/review-queue-section";
+import { ToastMessage } from "@/components/toast-message";
 import { listDueProblems } from "@/data/reviews";
 import { createClient } from "@/lib/supabase/server";
 
@@ -80,15 +82,25 @@ export default async function ReviewPage({
         </div>
 
         {pageMessage ? (
-          <div className="mt-6 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            {pageMessage}
-          </div>
+          <Suspense fallback={null}>
+            <ToastMessage
+              key={`message-${getFirstParam(message) ?? pageMessage}`}
+              message={pageMessage}
+              queryKey={getFirstParam(message) ?? ""}
+              tone="success"
+            />
+          </Suspense>
         ) : null}
 
         {pageError ? (
-          <div className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {pageError}
-          </div>
+          <Suspense fallback={null}>
+            <ToastMessage
+              key={`error-${getFirstParam(error) ?? pageError}`}
+              message={pageError}
+              queryKey={getFirstParam(error) ?? ""}
+              tone="error"
+            />
+          </Suspense>
         ) : null}
 
         <div className="mt-8">
