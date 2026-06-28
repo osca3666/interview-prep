@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { signOutAction } from "@/app/auth/actions";
 import { AddProblemDialog } from "@/components/add-problem-dialog";
 import { ProgressTable } from "@/components/progress-table";
 import { ReviewQueueSection } from "@/components/review-queue-section";
@@ -92,7 +91,7 @@ export default async function Dashboard({
   return (
     <div className="bg-zinc-50">
       <section className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
               Dashboard
@@ -100,19 +99,7 @@ export default async function Dashboard({
             <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
               Review workspace
             </h1>
-            <p className="max-w-2xl text-base leading-7 text-zinc-600">
-              Review due problems, add new practice, and track progress from
-              one place.
-            </p>
           </div>
-          <form action={signOutAction}>
-            <button
-              type="submit"
-              className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100"
-            >
-              Sign out
-            </button>
-          </form>
         </div>
 
         {pageMessage ? (
@@ -141,13 +128,12 @@ export default async function Dashboard({
           <ReviewQueueSection dueProblems={dueProblems} returnTo="/dashboard" />
         </div>
 
-        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-h-11 flex-1" aria-hidden="true" />
-          <AddProblemDialog />
-        </div>
-
         <div className="mt-8">
-          <ProgressTable problems={progressProblems} title="Progress" />
+          <ProgressTable
+            problems={progressProblems}
+            title="Progress"
+            headerAction={<AddProblemDialog />}
+          />
         </div>
       </section>
     </div>

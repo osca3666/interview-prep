@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import { signOutAction } from "@/app/auth/actions";
+import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,11 +20,15 @@ export const metadata: Metadata = {
   description: "Track LeetCode practice and review problems on schedule.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const isSignedIn = Boolean(data?.claims?.sub);
+
   return (
     <html
       lang="en"
@@ -60,18 +66,31 @@ export default function RootLayout({
                 >
                   Problems
                 </Link>
-                <Link
-                  href="/sign-in"
-                  className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/sign-up"
-                  className="rounded-md bg-zinc-950 px-3 py-2 text-white transition hover:bg-zinc-800"
-                >
-                  Sign up
-                </Link>
+                {isSignedIn ? (
+                  <form action={signOutAction}>
+                    <button
+                      type="submit"
+                      className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
+                    >
+                      Sign out
+                    </button>
+                  </form>
+                ) : (
+                  <>
+                    <Link
+                      href="/sign-in"
+                      className="rounded-md px-3 py-2 transition hover:bg-zinc-100 hover:text-zinc-950"
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      href="/sign-up"
+                      className="rounded-md bg-zinc-950 px-3 py-2 text-white transition hover:bg-zinc-800"
+                    >
+                      Sign up
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
           </header>

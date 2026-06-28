@@ -73,11 +73,10 @@ export default async function ReviewPage({
             Review
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
-            Due review queue
+            Ready to review
           </h1>
           <p className="max-w-2xl text-base leading-7 text-zinc-600">
-            Review active problems that are due now. The database calculates
-            the next review date after you rate each item.
+            Review active problems that are ready for another pass.
           </p>
         </div>
 

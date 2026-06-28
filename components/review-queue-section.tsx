@@ -21,18 +21,14 @@ export function ReviewQueueSection({
     <div className="rounded-lg border border-zinc-200 bg-white shadow-sm">
       <div className="border-b border-zinc-200 px-5 py-4">
         <h2 className="text-base font-semibold text-zinc-950">
-          Problems due now
+          Ready to review
         </h2>
       </div>
 
       {dueProblems.length === 0 ? (
-        <div className="p-6">
-          <h3 className="text-sm font-semibold text-zinc-950">
-            Nothing due right now
-          </h3>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-600">
-            You are caught up. Add more problems or come back when the next
-            review date arrives.
+        <div className="px-5 py-4">
+          <p className="text-sm font-medium text-zinc-600">
+            Nothing ready to review — you’re caught up.
           </p>
         </div>
       ) : (
