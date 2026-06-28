@@ -14,7 +14,6 @@ export type DueProblem = Pick<
   | "review_stage"
   | "next_review_at"
   | "schedule_version"
-  | "mastery_score"
 >;
 
 type TypedSupabaseClient = SupabaseClient<Database>;
@@ -28,7 +27,7 @@ export async function listDueProblems(
   return supabase
     .from("user_problems")
     .select(
-      "id,title,difficulty,pattern,notes,leetcode_url,review_stage,next_review_at,schedule_version,mastery_score",
+      "id,title,difficulty,pattern,notes,leetcode_url,review_stage,next_review_at,schedule_version",
     )
     .eq("user_id", userId)
     .eq("lifecycle_state", "active")

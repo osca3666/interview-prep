@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 
 type DueDateTextProps = {
   value: string;
+  variant?: "plain" | "badge";
+};
+
+type DueDateInfo = {
+  text: string;
+  state: "today" | "overdue" | "future";
 };
 
 function formatLocalDate(value: string) {
@@ -32,7 +38,7 @@ function getLocalDayNumber(date: Date) {
   return Date.UTC(year, month - 1, day) / 86_400_000;
 }
 
-function getDueText(value: string) {
+function getDueInfo(value: string): DueDateInfo {
   const dueDate = new Date(value);
   const dueDay = getLocalDayNumber(dueDate);
   const today = getLocalDayNumber(new Date());
@@ -40,26 +46,55 @@ function getDueText(value: string) {
   const formatted = formatLocalDate(value);
 
   if (diffDays === 0) {
-    return `Due today (${formatted})`;
+    return { text: `Due today (${formatted})`, state: "today" };
   }
 
   if (diffDays > 0) {
-    return `Overdue by ${diffDays} ${diffDays === 1 ? "day" : "days"} (${formatted})`;
+    return {
+      text: `Overdue by ${diffDays} ${diffDays === 1 ? "day" : "days"} (${formatted})`,
+      state: "overdue",
+    };
   }
 
-  return `Due ${formatted}`;
+  return { text: `Due ${formatted}`, state: "future" };
 }
 
-export function DueDateText({ value }: DueDateTextProps) {
-  const [text, setText] = useState<string | null>(null);
+function getBadgeClassName(state: DueDateInfo["state"]) {
+  if (state === "overdue") {
+    return "border-amber-200 bg-amber-50 text-amber-800";
+  }
+
+  if (state === "today") {
+    return "border-zinc-200 bg-zinc-50 text-zinc-700";
+  }
+
+  return "border-sky-200 bg-sky-50 text-sky-800";
+}
+
+export function DueDateText({ value, variant = "plain" }: DueDateTextProps) {
+  const [dueInfo, setDueInfo] = useState<DueDateInfo | null>(null);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      setText(getDueText(value));
+      setDueInfo(getDueInfo(value));
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
   }, [value]);
 
-  return <span suppressHydrationWarning>{text ?? "..."}</span>;
+  if (variant === "badge") {
+    return (
+      <span
+        className={[
+          "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
+          dueInfo ? getBadgeClassName(dueInfo.state) : "border-zinc-200 bg-zinc-50 text-zinc-500",
+        ].join(" ")}
+        suppressHydrationWarning
+      >
+        {dueInfo?.text ?? "..."}
+      </span>
+    );
+  }
+
+  return <span suppressHydrationWarning>{dueInfo?.text ?? "..."}</span>;
 }

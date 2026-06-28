@@ -19,9 +19,9 @@ export function MasteryBoxes({ masteryScore }: MasteryBoxesProps) {
               className={[
                 "h-3 w-3 rounded-sm border transition",
                 isFilled
-                  ? "border-emerald-600 bg-emerald-500"
-                  : "border-zinc-300 bg-white",
-                isComplete && isFilled ? "shadow-[0_0_8px_rgba(16,185,129,0.45)]" : "",
+                  ? "border-sky-600 bg-sky-500"
+                  : "border-zinc-300 bg-zinc-100",
+                isComplete && isFilled ? "shadow-[0_0_8px_rgba(14,165,233,0.45)]" : "",
               ].join(" ")}
             />
           );

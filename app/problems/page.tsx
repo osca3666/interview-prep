@@ -45,6 +45,19 @@ function getProblemError(value: string | string[] | undefined) {
   }
 }
 
+function getDifficultyBadgeClassName(difficulty: string) {
+  switch (difficulty.toLowerCase()) {
+    case "easy":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "medium":
+      return "border-amber-200 bg-amber-50 text-amber-800";
+    case "hard":
+      return "border-red-200 bg-red-50 text-red-700";
+    default:
+      return "border-zinc-200 bg-zinc-100 text-zinc-700";
+  }
+}
+
 export default async function ProblemsPage({
   searchParams,
 }: {
@@ -140,7 +153,12 @@ export default async function ProblemsPage({
                           {problem.title}
                         </h3>
                         <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium">
-                          <span className="rounded-md bg-zinc-100 px-2 py-1 text-zinc-700">
+                          <span
+                            className={[
+                              "rounded-md border px-2 py-1",
+                              getDifficultyBadgeClassName(problem.difficulty),
+                            ].join(" ")}
+                          >
                             {problem.difficulty}
                           </span>
                           {problem.pattern ? (

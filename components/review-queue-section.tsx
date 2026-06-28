@@ -17,109 +17,85 @@ export function ReviewQueueSection({
   dueProblems,
   returnTo,
 }: ReviewQueueSectionProps) {
+  const readyCountLabel =
+    dueProblems.length === 1 ? "1 ready" : `${dueProblems.length} ready`;
+
   return (
     <div className="rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <div className="border-b border-zinc-200 px-5 py-4">
+      <div className="flex items-center justify-between gap-4 border-b border-zinc-200 px-5 py-4">
         <h2 className="text-base font-semibold text-zinc-950">
           Ready to review
         </h2>
+        {dueProblems.length > 0 ? (
+          <span className="text-sm font-medium text-zinc-500">
+            {readyCountLabel}
+          </span>
+        ) : null}
       </div>
 
       {dueProblems.length === 0 ? (
         <div className="px-5 py-4">
-          <p className="text-sm font-medium text-zinc-600">
-            Nothing ready to review — you’re caught up.
+          <p className="text-sm font-semibold text-zinc-800">
+            All clear — you’re caught up.
+          </p>
+          <p className="mt-1 text-sm text-zinc-500">
+            Nothing ready to review right now.
           </p>
         </div>
       ) : (
-        <ul className="divide-y divide-zinc-200">
+        <ul className="flex gap-4 overflow-x-auto p-5">
           {dueProblems.map((problem) => (
-            <li key={problem.id} className="p-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold text-zinc-950">
-                      {problem.title}
-                    </h3>
+            <li
+              key={problem.id}
+              className="w-[19rem] flex-none rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
+            >
+              <div className="min-w-0">
+                <h3
+                  className="line-clamp-2 text-lg font-semibold leading-6 text-zinc-950"
+                  title={problem.title}
+                >
+                  {problem.leetcode_url ? (
                     <a
                       href={problem.leetcode_url}
                       target="_blank"
                       rel="noreferrer"
-                      aria-label={`Open ${problem.title} on LeetCode`}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
+                      className="underline-offset-4 transition hover:text-sky-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
                     >
-                      <svg
-                        aria-hidden="true"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        className="h-4 w-4"
-                      >
-                        <path
-                          d="M7.5 5.5h7v7"
-                          stroke="currentColor"
-                          strokeWidth="1.7"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M14.5 5.5 6 14"
-                          stroke="currentColor"
-                          strokeWidth="1.7"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M12.5 14.5h-7v-7"
-                          stroke="currentColor"
-                          strokeWidth="1.7"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                      {problem.title}
                     </a>
-                    <span className="rounded-md bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700">
-                      {problem.difficulty}
-                    </span>
-                    {problem.pattern ? (
-                      <span className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800">
-                        {problem.pattern}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-2 text-sm text-zinc-600">
-                    <DueDateText value={problem.next_review_at} />
-                  </p>
-                  {problem.notes ? (
-                    <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-zinc-700">
-                      {problem.notes}
-                    </p>
-                  ) : null}
+                  ) : (
+                    problem.title
+                  )}
+                </h3>
+                <div className="mt-3">
+                  <DueDateText value={problem.next_review_at} variant="badge" />
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:justify-end">
-                  {ratings.map((rating) => (
-                    <form key={rating.value} action={submitReviewAction}>
-                      <input type="hidden" name="return_to" value={returnTo} />
-                      <input
-                        type="hidden"
-                        name="user_problem_id"
-                        value={problem.id}
-                      />
-                      <input
-                        type="hidden"
-                        name="expected_schedule_version"
-                        value={problem.schedule_version}
-                      />
-                      <button
-                        type="submit"
-                        name="rating"
-                        value={rating.value}
-                        className="inline-flex h-10 w-full items-center justify-center rounded-md border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100 sm:w-auto"
-                      >
-                        {rating.label}
-                      </button>
-                    </form>
-                  ))}
-                </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {ratings.map((rating) => (
+                  <form key={rating.value} action={submitReviewAction}>
+                    <input type="hidden" name="return_to" value={returnTo} />
+                    <input
+                      type="hidden"
+                      name="user_problem_id"
+                      value={problem.id}
+                    />
+                    <input
+                      type="hidden"
+                      name="expected_schedule_version"
+                      value={problem.schedule_version}
+                    />
+                    <button
+                      type="submit"
+                      name="rating"
+                      value={rating.value}
+                      className="inline-flex h-9 w-full items-center justify-center rounded-md border border-zinc-300 bg-white px-2 text-sm font-medium text-zinc-800 transition hover:border-zinc-400 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-200"
+                    >
+                      {rating.label}
+                    </button>
+                  </form>
+                ))}
               </div>
             </li>
           ))}

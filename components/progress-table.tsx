@@ -13,6 +13,19 @@ type ProgressTableProps = {
   emptyDescription?: string;
 };
 
+function getDifficultyBadgeClassName(difficulty: string) {
+  switch (difficulty.toLowerCase()) {
+    case "easy":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "medium":
+      return "border-amber-200 bg-amber-50 text-amber-800";
+    case "hard":
+      return "border-red-200 bg-red-50 text-red-700";
+    default:
+      return "border-zinc-200 bg-zinc-100 text-zinc-700";
+  }
+}
+
 export function ProgressTable({
   problems,
   title,
@@ -152,7 +165,12 @@ export function ProgressTable({
                         )}
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-                        <span className="font-medium text-zinc-500">
+                        <span
+                          className={[
+                            "rounded-md border px-2 py-1 font-medium",
+                            getDifficultyBadgeClassName(problem.difficulty),
+                          ].join(" ")}
+                        >
                           {problem.difficulty}
                         </span>
                       </div>
