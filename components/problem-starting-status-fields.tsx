@@ -8,6 +8,12 @@ const ratings = [
   { value: "easy", label: "Great" },
 ];
 
+const dateFieldClassName =
+  "mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800 dark:[color-scheme:dark]";
+
+const radioClassName =
+  "mt-1 h-4 w-4 border-zinc-300 text-zinc-950 dark:border-zinc-600 dark:bg-zinc-950 dark:text-sky-400 dark:focus:ring-sky-800";
+
 function getLocalDateInputValue(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -43,8 +49,8 @@ export function ProblemStartingStatusFields() {
   }, []);
 
   return (
-    <fieldset className="rounded-md border border-zinc-200 p-4">
-      <legend className="px-1 text-sm font-semibold text-zinc-950">
+    <fieldset className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800">
+      <legend className="px-1 text-sm font-semibold text-zinc-950 dark:text-zinc-100">
         Starting status
       </legend>
       <input type="hidden" name="time_zone" value={timeZone} />
@@ -57,13 +63,13 @@ export function ProblemStartingStatusFields() {
             value="practiced"
             checked={startMode === "practiced"}
             onChange={() => setStartMode("practiced")}
-            className="mt-1 h-4 w-4 border-zinc-300 text-zinc-950"
+            className={radioClassName}
           />
           <span>
-            <span className="block text-sm font-medium text-zinc-800">
+            <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-200">
               I practiced this problem
             </span>
-            <span className="block text-xs leading-5 text-zinc-500">
+            <span className="block text-xs leading-5 text-zinc-500 dark:text-zinc-400">
               Use this when you already worked on the problem.
             </span>
           </span>
@@ -74,7 +80,7 @@ export function ProblemStartingStatusFields() {
             <div>
               <label
                 htmlFor="practice_date"
-                className="block text-sm font-medium text-zinc-700"
+                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
               >
                 Practice date
               </label>
@@ -86,26 +92,26 @@ export function ProblemStartingStatusFields() {
                 value={practiceDate}
                 max={todayLocalDate}
                 onChange={(event) => setPracticeDate(event.target.value)}
-                className="mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+                className={dateFieldClassName}
               />
             </div>
 
             <fieldset>
-              <legend className="text-sm font-medium text-zinc-700">
+              <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                 How did it go?
               </legend>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {ratings.map((rating) => (
                   <label
                     key={rating.value}
-                    className="flex items-center gap-2 rounded-md border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700"
+                    className="flex items-center gap-2 rounded-md border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950/50 dark:text-zinc-200"
                   >
                     <input
                       type="radio"
                       name="rating"
                       value={rating.value}
                       defaultChecked={rating.value === "good"}
-                      className="h-4 w-4 border-zinc-300 text-zinc-950"
+                      className="h-4 w-4 border-zinc-300 text-zinc-950 dark:border-zinc-600 dark:bg-zinc-950 dark:text-sky-400 dark:focus:ring-sky-800"
                     />
                     {rating.label}
                   </label>
@@ -122,13 +128,13 @@ export function ProblemStartingStatusFields() {
             value="scheduled"
             checked={startMode === "scheduled"}
             onChange={() => setStartMode("scheduled")}
-            className="mt-1 h-4 w-4 border-zinc-300 text-zinc-950"
+            className={radioClassName}
           />
           <span>
-            <span className="block text-sm font-medium text-zinc-800">
+            <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-200">
               I have not practiced it yet
             </span>
-            <span className="block text-xs leading-5 text-zinc-500">
+            <span className="block text-xs leading-5 text-zinc-500 dark:text-zinc-400">
               Use this to choose when it first appears in review.
             </span>
           </span>
@@ -138,7 +144,7 @@ export function ProblemStartingStatusFields() {
           <div className="ml-7">
             <label
               htmlFor="first_review_date"
-              className="block text-sm font-medium text-zinc-700"
+              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
             >
               First review date
             </label>
@@ -150,7 +156,7 @@ export function ProblemStartingStatusFields() {
               value={firstReviewDate}
               min={todayLocalDate}
               onChange={(event) => setFirstReviewDate(event.target.value)}
-              className="mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+              className={dateFieldClassName}
             />
           </div>
         ) : null}

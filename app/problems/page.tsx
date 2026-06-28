@@ -48,13 +48,13 @@ function getProblemError(value: string | string[] | undefined) {
 function getDifficultyBadgeClassName(difficulty: string) {
   switch (difficulty.toLowerCase()) {
     case "easy":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+      return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300";
     case "medium":
-      return "border-amber-200 bg-amber-50 text-amber-800";
+      return "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300";
     case "hard":
-      return "border-red-200 bg-red-50 text-red-700";
+      return "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300";
     default:
-      return "border-zinc-200 bg-zinc-100 text-zinc-700";
+      return "border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
   }
 }
 
@@ -85,16 +85,16 @@ export default async function ProblemsPage({
   }
 
   return (
-    <div className="bg-zinc-50">
+    <div className="bg-zinc-50 dark:bg-zinc-950">
       <section className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
             Problems
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
             Add and track LeetCode problems
           </h1>
-          <p className="max-w-2xl text-base leading-7 text-zinc-600">
+          <p className="max-w-2xl text-base leading-7 text-zinc-600 dark:text-zinc-400">
             Start with manual entries. Reviews, scheduling actions, and filters
             come in later slices.
           </p>
@@ -125,31 +125,31 @@ export default async function ProblemsPage({
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,400px)_1fr]">
           <AddProblemForm returnTo="/problems" />
 
-          <div className="rounded-lg border border-zinc-200 bg-white shadow-sm">
-            <div className="border-b border-zinc-200 px-5 py-4">
-              <h2 className="text-base font-semibold text-zinc-950">
+          <div className="rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+              <h2 className="text-base font-semibold text-zinc-950 dark:text-zinc-100">
                 Saved problems
               </h2>
             </div>
 
             {problems.length === 0 ? (
               <div className="p-6">
-                <h3 className="text-sm font-semibold text-zinc-950">
+                <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">
                   No problems yet
                 </h3>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-600">
+                <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
                   Add your first LeetCode problem to start building a review
                   list. The next review date will use the database default for
                   now.
                 </p>
               </div>
             ) : (
-              <ul className="divide-y divide-zinc-200">
+              <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
                 {problems.map((problem) => (
-                  <li key={problem.id} className="p-5">
+                  <li key={problem.id} className="p-5 dark:hover:bg-zinc-800/40">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <h3 className="font-semibold text-zinc-950">
+                        <h3 className="font-semibold text-zinc-950 dark:text-zinc-100">
                           {problem.title}
                         </h3>
                         <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium">
@@ -162,11 +162,11 @@ export default async function ProblemsPage({
                             {problem.difficulty}
                           </span>
                           {problem.pattern ? (
-                            <span className="rounded-md bg-emerald-50 px-2 py-1 text-emerald-800">
+                            <span className="rounded-md bg-emerald-50 px-2 py-1 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
                               {problem.pattern}
                             </span>
                           ) : null}
-                          <span className="rounded-md bg-zinc-100 px-2 py-1 text-zinc-700">
+                          <span className="rounded-md bg-zinc-100 px-2 py-1 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                             {problem.lifecycle_state}
                           </span>
                         </div>
@@ -175,12 +175,12 @@ export default async function ProblemsPage({
                         href={problem.leetcode_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline"
+                        className="text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline dark:text-zinc-100 dark:hover:text-sky-300"
                       >
                         Open on LeetCode
                       </a>
                     </div>
-                    <p className="mt-3 text-sm text-zinc-600">
+                    <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
                       Next review: <LocalDate value={problem.next_review_at} />
                     </p>
                   </li>

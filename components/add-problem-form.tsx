@@ -7,10 +7,15 @@ type AddProblemFormProps = {
 };
 
 const fieldClassName =
-  "mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200";
+  "mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-800 dark:[color-scheme:dark]";
 
 const textareaClassName =
-  "mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200";
+  "mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-800";
+
+const labelClassName = "block text-sm font-medium text-zinc-700 dark:text-zinc-300";
+
+const submitButtonClassName =
+  "inline-flex h-11 w-full items-center justify-center rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white";
 
 export function AddProblemForm({
   returnTo,
@@ -23,13 +28,15 @@ export function AddProblemForm({
       action={addProblemAction}
       className={
         isModal
-          ? "p-5 sm:p-6"
-          : "rounded-lg border border-zinc-200 bg-white p-5 shadow-sm"
+          ? "p-5 dark:bg-zinc-900 sm:p-6"
+          : "rounded-lg border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
       }
     >
       <input type="hidden" name="return_to" value={returnTo} />
       {isModal ? null : (
-        <h2 className="text-base font-semibold text-zinc-950">Add problem</h2>
+        <h2 className="text-base font-semibold text-zinc-950 dark:text-zinc-100">
+          Add problem
+        </h2>
       )}
 
       <div
@@ -43,7 +50,7 @@ export function AddProblemForm({
           <div>
             <label
               htmlFor="leetcode_url"
-              className="block text-sm font-medium text-zinc-700"
+              className={labelClassName}
             >
               LeetCode URL
             </label>
@@ -60,7 +67,7 @@ export function AddProblemForm({
           <div>
             <label
               htmlFor="title"
-              className="block text-sm font-medium text-zinc-700"
+              className={labelClassName}
             >
               Title
             </label>
@@ -82,7 +89,7 @@ export function AddProblemForm({
             <div>
               <label
                 htmlFor="difficulty"
-                className="block text-sm font-medium text-zinc-700"
+                className={labelClassName}
               >
                 Difficulty
               </label>
@@ -102,7 +109,7 @@ export function AddProblemForm({
             <div>
               <label
                 htmlFor="pattern"
-                className="block text-sm font-medium text-zinc-700"
+                className={labelClassName}
               >
                 Pattern
               </label>
@@ -120,7 +127,7 @@ export function AddProblemForm({
           <div>
             <label
               htmlFor="notes"
-              className="block text-sm font-medium text-zinc-700"
+              className={labelClassName}
             >
               Notes
             </label>
@@ -140,7 +147,7 @@ export function AddProblemForm({
       <div
         className={
           isModal
-            ? "mt-6 flex justify-end border-t border-zinc-200 pt-5"
+            ? "mt-6 flex justify-end border-t border-zinc-200 pt-5 dark:border-zinc-800"
             : "mt-5"
         }
       >
@@ -148,8 +155,8 @@ export function AddProblemForm({
           type="submit"
           className={
             isModal
-              ? "inline-flex h-11 w-full items-center justify-center rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 sm:w-auto"
-              : "inline-flex h-11 w-full items-center justify-center rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800"
+              ? `${submitButtonClassName} sm:w-auto`
+              : submitButtonClassName
           }
         >
           Add problem
