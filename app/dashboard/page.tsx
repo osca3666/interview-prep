@@ -89,14 +89,14 @@ export default async function Dashboard({
   const progressProblems = progressResult.data ?? [];
 
   return (
-    <div className="bg-zinc-50">
+    <div className="bg-zinc-50 dark:bg-zinc-950">
       <section className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
               Dashboard
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
               Review workspace
             </h1>
           </div>

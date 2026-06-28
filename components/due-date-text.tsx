@@ -61,14 +61,14 @@ function getDueInfo(value: string): DueDateInfo {
 
 function getBadgeClassName(state: DueDateInfo["state"]) {
   if (state === "overdue") {
-    return "border-amber-200 bg-amber-50 text-amber-800";
+    return "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300";
   }
 
   if (state === "today") {
-    return "border-zinc-200 bg-zinc-50 text-zinc-700";
+    return "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200";
   }
 
-  return "border-sky-200 bg-sky-50 text-sky-800";
+  return "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300";
 }
 
 export function DueDateText({ value, variant = "plain" }: DueDateTextProps) {
@@ -87,7 +87,9 @@ export function DueDateText({ value, variant = "plain" }: DueDateTextProps) {
       <span
         className={[
           "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
-          dueInfo ? getBadgeClassName(dueInfo.state) : "border-zinc-200 bg-zinc-50 text-zinc-500",
+          dueInfo
+            ? getBadgeClassName(dueInfo.state)
+            : "border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400",
         ].join(" ")}
         suppressHydrationWarning
       >

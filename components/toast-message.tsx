@@ -62,8 +62,8 @@ export function ToastMessage({ message, queryKey, tone }: ToastMessageProps) {
       <div
         className={
           isSuccess
-            ? "rounded-lg border border-emerald-200 bg-white px-4 py-3 text-sm text-emerald-900 shadow-lg"
-            : "rounded-lg border border-red-200 bg-white px-4 py-3 text-sm text-red-900 shadow-lg"
+            ? "rounded-lg border border-emerald-200 bg-white px-4 py-3 text-sm text-emerald-900 shadow-lg dark:border-emerald-800 dark:bg-zinc-900 dark:text-emerald-200"
+            : "rounded-lg border border-red-200 bg-white px-4 py-3 text-sm text-red-900 shadow-lg dark:border-red-800 dark:bg-zinc-900 dark:text-red-200"
         }
       >
         <div className="flex items-start gap-3">
@@ -79,7 +79,7 @@ export function ToastMessage({ message, queryKey, tone }: ToastMessageProps) {
           <button
             type="button"
             onClick={dismiss}
-            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
+            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
             aria-label="Dismiss notification"
           >
             X

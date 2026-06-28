@@ -16,13 +16,13 @@ type ProgressTableProps = {
 function getDifficultyBadgeClassName(difficulty: string) {
   switch (difficulty.toLowerCase()) {
     case "easy":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+      return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300";
     case "medium":
-      return "border-amber-200 bg-amber-50 text-amber-800";
+      return "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300";
     case "hard":
-      return "border-red-200 bg-red-50 text-red-700";
+      return "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300";
     default:
-      return "border-zinc-200 bg-zinc-100 text-zinc-700";
+      return "border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
   }
 }
 
@@ -67,9 +67,11 @@ export function ProgressTable({
     "flex items-center justify-center px-5 py-4 text-center whitespace-nowrap";
 
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-4 border-b border-zinc-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-base font-semibold text-zinc-950">{title}</h2>
+    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex flex-col gap-4 border-b border-zinc-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800">
+        <h2 className="text-base font-semibold text-zinc-950 dark:text-zinc-100">
+          {title}
+        </h2>
         {hasHeaderControls ? (
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
             {problems.length > 0 ? (
@@ -83,7 +85,7 @@ export function ProgressTable({
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Search problems"
-                  className="block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+                  className="block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
                 />
               </div>
             ) : null}
@@ -98,8 +100,10 @@ export function ProgressTable({
 
       {problems.length === 0 ? (
         <div className="p-6">
-          <h3 className="text-sm font-semibold text-zinc-950">{emptyTitle}</h3>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-600">
+          <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">
+            {emptyTitle}
+          </h3>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
             {emptyDescription}
           </p>
         </div>
@@ -107,7 +111,7 @@ export function ProgressTable({
         <div className="overflow-x-auto">
           <div className="min-h-[320px] max-h-[420px] overflow-y-auto">
             <div
-              className={`${gridWidthClassName} ${gridTemplateClassName} sticky top-0 z-10 border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500`}
+              className={`${gridWidthClassName} ${gridTemplateClassName} sticky top-0 z-10 border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400`}
               role="row"
             >
               <div className={problemHeaderCellClassName} role="columnheader">
@@ -128,19 +132,19 @@ export function ProgressTable({
             </div>
             {filteredProblems.length === 0 ? (
               <div className={`${gridWidthClassName} p-6`}>
-                <h3 className="text-sm font-semibold text-zinc-950">
+                <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">
                   No problems match your search.
                 </h3>
               </div>
             ) : (
               <div
-                className={`${gridWidthClassName} divide-y divide-zinc-200 bg-white text-left text-sm`}
+                className={`${gridWidthClassName} divide-y divide-zinc-200 bg-white text-left text-sm dark:divide-zinc-800 dark:bg-zinc-900`}
                 role="rowgroup"
               >
                 {filteredProblems.map((problem) => (
                   <div
                     key={problem.id}
-                    className={gridTemplateClassName}
+                    className={`${gridTemplateClassName} dark:hover:bg-zinc-800/40`}
                     role="row"
                   >
                     <div className={problemBodyCellClassName} role="cell">
@@ -151,13 +155,13 @@ export function ProgressTable({
                             target="_blank"
                             rel="noreferrer"
                             title={problem.title}
-                            className="block truncate font-semibold text-zinc-950 underline-offset-4 transition hover:text-sky-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                            className="block truncate font-semibold text-zinc-950 underline-offset-4 transition hover:text-sky-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 dark:text-zinc-100 dark:hover:text-sky-300 dark:focus-visible:ring-sky-800"
                           >
                             {problem.title}
                           </a>
                         ) : (
                           <div
-                            className="truncate font-semibold text-zinc-950"
+                            className="truncate font-semibold text-zinc-950 dark:text-zinc-100"
                             title={problem.title}
                           >
                             {problem.title}
@@ -181,7 +185,7 @@ export function ProgressTable({
                       </div>
                     </div>
                     <div
-                      className={`${centeredBodyCellClassName} text-zinc-600`}
+                      className={`${centeredBodyCellClassName} text-zinc-600 dark:text-zinc-400`}
                       role="cell"
                     >
                       <LocalDate
@@ -190,13 +194,13 @@ export function ProgressTable({
                       />
                     </div>
                     <div
-                      className={`${centeredBodyCellClassName} text-zinc-600`}
+                      className={`${centeredBodyCellClassName} text-zinc-600 dark:text-zinc-400`}
                       role="cell"
                     >
                       <LocalDate value={problem.next_review_at} fallback="-" />
                     </div>
                     <div
-                      className={`${centeredBodyCellClassName} font-medium text-zinc-800`}
+                      className={`${centeredBodyCellClassName} font-medium text-zinc-800 dark:text-zinc-200`}
                       role="cell"
                     >
                       {problem.total_reviews}
