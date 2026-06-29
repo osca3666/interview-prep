@@ -58,7 +58,7 @@ export function ProgressTable({
   const hasHeaderControls = problems.length > 0 || headerAction;
   const gridWidthClassName = "min-w-[60rem]";
   const gridTemplateClassName =
-    "grid grid-cols-[minmax(14rem,1fr)_8rem_10rem_10rem_8rem]";
+    "grid grid-cols-[minmax(14rem,1fr)_8rem_8rem_10rem_10rem_8rem]";
   const problemHeaderCellClassName = "px-5 py-3";
   const centeredHeaderCellClassName =
     "flex items-center justify-center px-5 py-3 text-center whitespace-nowrap";
@@ -108,14 +108,17 @@ export function ProgressTable({
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <div className="min-h-[320px] max-h-[420px] overflow-y-auto">
+        <div className="scrollbar-app overflow-x-auto">
+          <div className="scrollbar-app min-h-[320px] max-h-[420px] overflow-y-auto">
             <div
               className={`${gridWidthClassName} ${gridTemplateClassName} sticky top-0 z-10 border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400`}
               role="row"
             >
               <div className={problemHeaderCellClassName} role="columnheader">
                 Problem
+              </div>
+              <div className={centeredHeaderCellClassName} role="columnheader">
+                Difficulty
               </div>
               <div className={centeredHeaderCellClassName} role="columnheader">
                 Mastery
@@ -127,7 +130,7 @@ export function ProgressTable({
                 Next review
               </div>
               <div className={centeredHeaderCellClassName} role="columnheader">
-                Total reviews
+                Reviews
               </div>
             </div>
             {filteredProblems.length === 0 ? (
@@ -168,16 +171,16 @@ export function ProgressTable({
                           </div>
                         )}
                       </div>
-                      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-                        <span
-                          className={[
-                            "rounded-md border px-2 py-1 font-medium",
-                            getDifficultyBadgeClassName(problem.difficulty),
-                          ].join(" ")}
-                        >
-                          {problem.difficulty}
-                        </span>
-                      </div>
+                    </div>
+                    <div className={centeredBodyCellClassName} role="cell">
+                      <span
+                        className={[
+                          "rounded-md border px-2 py-1 text-xs font-medium",
+                          getDifficultyBadgeClassName(problem.difficulty),
+                        ].join(" ")}
+                      >
+                        {problem.difficulty}
+                      </span>
                     </div>
                     <div className={centeredBodyCellClassName} role="cell">
                       <div className="inline-flex">

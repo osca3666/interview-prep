@@ -33,7 +33,7 @@ export function AddProblemDialog() {
 
       {isOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-zinc-950/40 px-4 py-6 backdrop-blur-sm sm:py-10 dark:bg-black/60"
+          className="scrollbar-app fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-zinc-950/40 px-4 py-6 backdrop-blur-sm sm:py-10 dark:bg-black/60"
           role="presentation"
           onMouseDown={() => setIsOpen(false)}
         >
@@ -41,7 +41,7 @@ export function AddProblemDialog() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="add-problem-dialog-title"
-            className="max-h-[90vh] w-[min(calc(100vw-2rem),900px)] overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
+            className="scrollbar-app max-h-[90vh] w-[min(calc(100vw-2rem),900px)] overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 sm:px-6 dark:border-zinc-800">

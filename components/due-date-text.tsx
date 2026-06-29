@@ -9,6 +9,7 @@ type DueDateTextProps = {
 
 type DueDateInfo = {
   text: string;
+  badgeText: string;
   state: "today" | "overdue" | "future";
 };
 
@@ -46,22 +47,29 @@ function getDueInfo(value: string): DueDateInfo {
   const formatted = formatLocalDate(value);
 
   if (diffDays === 0) {
-    return { text: `Due today (${formatted})`, state: "today" };
+    return {
+      text: `Due today (${formatted})`,
+      badgeText: "Due today",
+      state: "today",
+    };
   }
 
   if (diffDays > 0) {
+    const overdueText = `Overdue by ${diffDays} ${diffDays === 1 ? "day" : "days"}`;
+
     return {
-      text: `Overdue by ${diffDays} ${diffDays === 1 ? "day" : "days"} (${formatted})`,
+      text: `${overdueText} (${formatted})`,
+      badgeText: overdueText,
       state: "overdue",
     };
   }
 
-  return { text: `Due ${formatted}`, state: "future" };
+  return { text: `Due ${formatted}`, badgeText: `Due ${formatted}`, state: "future" };
 }
 
 function getBadgeClassName(state: DueDateInfo["state"]) {
   if (state === "overdue") {
-    return "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300";
+    return "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300";
   }
 
   if (state === "today") {
@@ -93,7 +101,7 @@ export function DueDateText({ value, variant = "plain" }: DueDateTextProps) {
         ].join(" ")}
         suppressHydrationWarning
       >
-        {dueInfo?.text ?? "..."}
+        {dueInfo?.badgeText ?? "..."}
       </span>
     );
   }

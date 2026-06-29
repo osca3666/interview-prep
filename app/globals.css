@@ -36,3 +36,43 @@ body {
 * {
   box-sizing: border-box;
 }
+
+.scrollbar-app {
+  scrollbar-color: #a1a1aa transparent;
+  scrollbar-width: thin;
+}
+
+.dark .scrollbar-app {
+  scrollbar-color: #52525b transparent;
+}
+
+.scrollbar-app::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.scrollbar-app::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-app::-webkit-scrollbar-thumb {
+  background: #a1a1aa;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.scrollbar-app::-webkit-scrollbar-thumb:hover {
+  background: #71717a;
+  background-clip: padding-box;
+}
+
+.dark .scrollbar-app::-webkit-scrollbar-thumb {
+  background: #52525b;
+  background-clip: padding-box;
+}
+
+.dark .scrollbar-app::-webkit-scrollbar-thumb:hover {
+  background: #71717a;
+  background-clip: padding-box;
+}
