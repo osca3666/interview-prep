@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { AddProblemDialog } from "@/components/add-problem-dialog";
+import { CurrentGoalCard } from "@/components/current-goal-card";
 import { ProgressTable } from "@/components/progress-table";
 import { ReviewQueueSection } from "@/components/review-queue-section";
 import { ToastMessage } from "@/components/toast-message";
@@ -123,6 +124,10 @@ export default async function Dashboard({
             />
           </Suspense>
         ) : null}
+
+        <div className="mt-8">
+          <CurrentGoalCard />
+        </div>
 
         <div className="mt-8">
           <ReviewQueueSection dueProblems={dueProblems} returnTo="/dashboard" />
