@@ -1,0 +1,246 @@
+# MVP Beta Test Plan
+
+## MVP Summary
+
+LeetCode Review is a lightweight spaced-repetition tracker for LeetCode practice. The MVP helps a user save problems, schedule review dates, review problems when they are ready, rate each review, and track progress over time.
+
+The main workspace is `/dashboard`. The supporting Library page is `/problems`.
+
+Estimated tester time: 10-15 minutes.
+
+## What The App Currently Does
+
+- Supports email/password sign up and sign in.
+- Shows `/dashboard` as the main review workspace.
+- Lets users add LeetCode problems from the dashboard `+ Add Problem` modal.
+- Lets users add LeetCode problems inline from `/problems`, the Library page.
+- Supports two Add Problem starting states:
+  - `I practiced this problem`: counts as the first review/practice event.
+  - `I have not practiced it yet`: schedules the first review without counting practice.
+- Tracks due problems in the `Ready to review` section.
+- Lets users rate reviews with:
+  - `Redo`: retry soon, backend value `"again"`.
+  - `OK`: normal progress, backend value `"good"`.
+  - `Great`: faster progress, backend value `"easy"`.
+- Shows progress in a shared Progress table with problem title, difficulty, mastery, last reviewed, next review, and review count.
+- Shows tracked problems in the Library page using the shared Progress table.
+- Supports dark/light theme switching.
+- Shows toast feedback for success and common errors.
+
+## What Is Intentionally Not Included Yet
+
+The beta should not be evaluated as if these features exist:
+
+- Snooze / Skip Today
+- Roadmaps
+- Goal planning
+- AI coach
+- Calendar
+- Editing, archiving, or deleting problems
+- Payments
+- Public roadmap publishing
+
+## Tester Script
+
+Use this script for each first-pass beta test session.
+
+### 1. Account Setup
+
+1. Open the app.
+2. Create an account from `Sign up`.
+3. Sign out.
+4. Sign back in.
+5. Confirm you land on `/dashboard`.
+
+Expected result: auth works, the dashboard loads, and the nav shows signed-in controls.
+
+### 2. Add A Practiced Problem From Dashboard
+
+1. On `/dashboard`, click `+ Add Problem`.
+2. Add a valid LeetCode problem URL.
+3. Enter title, difficulty, optional pattern, and optional notes.
+4. Choose `I practiced this problem`.
+5. Keep practice date as today.
+6. Choose `OK`.
+7. Submit.
+
+Expected result: modal submission succeeds, a toast appears, and the problem appears in Progress.
+
+### 3. Add A Scheduled Problem From Dashboard
+
+1. Click `+ Add Problem` again.
+2. Add a different valid LeetCode problem.
+3. Choose `I have not practiced it yet`.
+4. Keep first review date as today or choose a future date.
+5. Submit.
+
+Expected result: the problem is added. If scheduled for today, it should be ready to review. If scheduled for the future, it should not appear in Ready to review yet.
+
+### 4. Review A Ready Problem
+
+1. Find a problem in `Ready to review`.
+2. Open the LeetCode title link if desired.
+3. Submit one review rating:
+   - `Redo`
+   - `OK`
+   - or `Great`
+4. Watch for the success toast.
+5. Confirm the problem leaves the ready list if it is no longer due.
+
+Expected result: review saves, the due queue updates, and Progress updates the review count, last reviewed date, next review date, and mastery.
+
+### 5. Check Library
+
+1. Open `/problems` from the nav.
+2. Confirm the page is titled `Problem library`.
+3. Add a problem using the inline form.
+4. Confirm the tracked problems table updates.
+5. Use the Progress table search to find a problem by title, difficulty, or pattern.
+
+Expected result: Library works as a supporting tracked-problem browser and inline add page.
+
+### 6. Check Theme
+
+1. Toggle between dark and light mode.
+2. Refresh the page.
+3. Confirm the selected theme persists.
+4. Check `/dashboard`, `/problems`, and sign-in/sign-up pages.
+
+Expected result: the app remains readable and usable in both themes.
+
+## Manual QA Checklist
+
+### Auth
+
+- [ ] New user can sign up.
+- [ ] Existing user can sign in.
+- [ ] Signed-in user can sign out.
+- [ ] Signed-out user is redirected to sign in for protected pages.
+
+### Dashboard
+
+- [ ] `/dashboard` loads without errors.
+- [ ] `Ready to review` shows due/overdue problems only.
+- [ ] Empty ready state says the user is caught up.
+- [ ] `+ Add Problem` opens a modal.
+- [ ] Modal closes with the close button.
+- [ ] Modal closes with backdrop click.
+- [ ] Modal closes with Escape.
+- [ ] Progress table search filters by title.
+- [ ] Progress table search filters by difficulty.
+- [ ] Progress table search filters by pattern.
+- [ ] Progress table header stays visible while rows scroll.
+
+### Add Problem
+
+- [ ] Practiced mode defaults to today and `OK`.
+- [ ] Practiced mode rejects future practice dates.
+- [ ] Scheduled mode defaults to today.
+- [ ] Scheduled mode handles today and future review dates correctly.
+- [ ] Duplicate problem shows the existing duplicate error.
+- [ ] Add from dashboard returns to `/dashboard`.
+- [ ] Add from Library returns to `/problems`.
+
+### Review Flow
+
+- [ ] `Redo` submits backend rating `"again"`.
+- [ ] `OK` submits backend rating `"good"`.
+- [ ] `Great` submits backend rating `"easy"`.
+- [ ] Review success shows a toast.
+- [ ] Stale or invalid review states show a safe error.
+- [ ] Review cards do not show difficulty, pattern, notes, or hints.
+
+### Library
+
+- [ ] `/problems` loads as `Problem library`.
+- [ ] Inline Add Problem form works.
+- [ ] Tracked problems display in the shared Progress table.
+- [ ] Search works in the Library Progress table.
+- [ ] Empty state is clear for a new user.
+
+### Data Isolation
+
+- [ ] Create or use two separate test accounts.
+- [ ] Add a problem in Account A.
+- [ ] Sign out of Account A and sign in to Account B.
+- [ ] Confirm Account B does not see Account A's problems, reviews, or progress.
+- [ ] Add a different problem in Account B.
+- [ ] Sign back in to Account A and confirm Account A still only sees its own data.
+
+### Visual / Theme
+
+- [ ] Dark mode is readable.
+- [ ] Light mode is readable.
+- [ ] Theme toggle persists after refresh.
+- [ ] Toasts are readable in both themes.
+- [ ] Internal scrollbars look acceptable.
+
+## Feedback Questions For Test Users
+
+1. What were you trying to do first after signing in?
+2. Was it clear how to add a problem?
+3. Was the difference between `I practiced this problem` and `I have not practiced it yet` clear?
+4. Did `Redo`, `OK`, and `Great` match how you think about review outcomes?
+5. Did the Ready to review list feel focused, or did you want more context?
+6. Did the Progress table help you understand what is happening over time?
+7. Was anything confusing about dates, due status, or next review timing?
+8. Did you expect to edit, archive, delete, snooze, or skip anything?
+9. Did the app feel too simple, too busy, or about right for a first version?
+10. What is the one thing that would make this useful enough to keep using?
+
+## Bug Report Template
+
+Use this format for beta tester issues.
+
+```md
+## Summary
+
+Short description of the issue.
+
+## Steps To Reproduce
+
+1.
+2.
+3.
+
+## Expected Result
+
+What did you expect to happen?
+
+## Actual Result
+
+What actually happened?
+
+## Page / Route
+
+Example: /dashboard, /problems, /sign-in
+
+## Account State
+
+Signed out / signed in / new account / existing account
+
+## Browser And Device
+
+Example: Chrome on Windows, Safari on iPhone
+
+## Screenshot Or Screen Recording
+
+Attach if possible.
+
+## Notes
+
+Any extra context, problem URL, or timing details.
+```
+
+## Known Non-Goals / Not-Yet-Built Features
+
+These are intentionally outside the MVP beta scope:
+
+- Snooze / Skip Today
+- Roadmaps
+- Goal planning
+- AI coach
+- Calendar
+- Editing/archiving/deleting problems
+- Payments
+- Public roadmap publishing
