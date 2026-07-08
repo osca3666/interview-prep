@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createUserProblem } from "@/data/problems";
+import { isValidDateOnly } from "@/lib/date-only";
+import { getTrimmedStringField } from "@/lib/form-data";
 import { parseLeetCodeProblemUrl } from "@/lib/leetcode";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -32,28 +34,8 @@ type DatabaseError = {
   message?: string;
 };
 
-function getTrimmedField(formData: FormData, name: string) {
-  const value = formData.get(name);
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function isValidDateOnly(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return false;
-  }
-
-  const [yearValue, monthValue, dayValue] = value.split("-").map(Number);
-  const date = new Date(Date.UTC(yearValue, monthValue - 1, dayValue));
-
-  return (
-    date.getUTCFullYear() === yearValue &&
-    date.getUTCMonth() === monthValue - 1 &&
-    date.getUTCDate() === dayValue
-  );
-}
-
 function getReturnPath(formData: FormData) {
-  const value = getTrimmedField(formData, "return_to");
+  const value = getTrimmedStringField(formData, "return_to");
   return allowedReturnPaths.has(value) ? value : "/problems";
 }
 
@@ -87,16 +69,21 @@ export async function addProblemAction(formData: FormData) {
     redirect("/sign-in");
   }
 
-  const rawUrl = getTrimmedField(formData, "leetcode_url");
-  const title = getTrimmedField(formData, "title");
-  const difficulty = getTrimmedField(formData, "difficulty").toLowerCase();
-  const pattern = getTrimmedField(formData, "pattern");
-  const notes = getTrimmedField(formData, "notes");
-  const startMode = getTrimmedField(formData, "start_mode");
-  const rating = getTrimmedField(formData, "rating");
-  const practiceDate = getTrimmedField(formData, "practice_date");
-  const firstReviewDate = getTrimmedField(formData, "first_review_date");
-  const timeZone = normalizeTimeZone(getTrimmedField(formData, "time_zone"));
+  const rawUrl = getTrimmedStringField(formData, "leetcode_url");
+  const title = getTrimmedStringField(formData, "title");
+  const difficulty = getTrimmedStringField(
+    formData,
+    "difficulty",
+  ).toLowerCase();
+  const pattern = getTrimmedStringField(formData, "pattern");
+  const notes = getTrimmedStringField(formData, "notes");
+  const startMode = getTrimmedStringField(formData, "start_mode");
+  const rating = getTrimmedStringField(formData, "rating");
+  const practiceDate = getTrimmedStringField(formData, "practice_date");
+  const firstReviewDate = getTrimmedStringField(formData, "first_review_date");
+  const timeZone = normalizeTimeZone(
+    getTrimmedStringField(formData, "time_zone"),
+  );
   const parsedUrl = parseLeetCodeProblemUrl(rawUrl);
 
   if (!parsedUrl) {
