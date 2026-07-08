@@ -15,7 +15,7 @@ const ratings: Array<{
 
 type ReviewQueueSectionProps = {
   dueProblems: DueProblem[];
-  returnTo: "/dashboard" | "/review";
+  returnTo: "/dashboard";
 };
 
 export function ReviewQueueSection({
