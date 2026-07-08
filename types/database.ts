@@ -164,6 +164,14 @@ export type Database = {
           user_problem_id: string
         }[]
       }
+      snooze_problem_review: {
+        Args: {
+          p_expected_schedule_version: number
+          p_time_zone: string
+          p_user_problem_id: string
+        }
+        Returns: undefined
+      }
       submit_problem_review: {
         Args: {
           p_expected_schedule_version: number

@@ -50,3 +50,18 @@ export async function submitProblemReview(
     p_expected_schedule_version: input.expectedScheduleVersion,
   });
 }
+
+export async function snoozeProblemReview(
+  supabase: TypedSupabaseClient,
+  input: {
+    userProblemId: string;
+    timeZone: string;
+    expectedScheduleVersion: number;
+  },
+){
+  return supabase.rpc("snooze_problem_review", {
+    p_expected_schedule_version: input.expectedScheduleVersion,
+    p_time_zone:  input.timeZone,
+    p_user_problem_id: input.userProblemId,
+  });
+}
