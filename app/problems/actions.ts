@@ -5,6 +5,11 @@ import { redirect } from "next/navigation";
 import { createUserProblem } from "@/data/problems";
 import { parseLeetCodeProblemUrl } from "@/lib/leetcode";
 import { createClient } from "@/lib/supabase/server";
+import {
+  getDateOnlyInTimeZone,
+  isValidTimeZone,
+  normalizeTimeZone,
+} from "@/lib/time-zone";
 
 const titleMaxLength = 160;
 const patternMaxLength = 80;
@@ -47,40 +52,9 @@ function isValidDateOnly(value: string) {
   );
 }
 
-function getDateOnlyInTimeZone(date: Date, timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-  const year = parts.find((part) => part.type === "year")?.value;
-  const month = parts.find((part) => part.type === "month")?.value;
-  const day = parts.find((part) => part.type === "day")?.value;
-
-  if (!year || !month || !day) {
-    return null;
-  }
-
-  return `${year}-${month}-${day}`;
-}
-
 function getReturnPath(formData: FormData) {
   const value = getTrimmedField(formData, "return_to");
   return allowedReturnPaths.has(value) ? value : "/problems";
-}
-
-function isValidTimeZone(value: string) {
-  if (!value) {
-    return false;
-  }
-
-  try {
-    new Intl.DateTimeFormat("en-US", { timeZone: value });
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function getControlledRpcMessage(error: DatabaseError) {
@@ -122,7 +96,7 @@ export async function addProblemAction(formData: FormData) {
   const rating = getTrimmedField(formData, "rating");
   const practiceDate = getTrimmedField(formData, "practice_date");
   const firstReviewDate = getTrimmedField(formData, "first_review_date");
-  const timeZone = getTrimmedField(formData, "time_zone");
+  const timeZone = normalizeTimeZone(getTrimmedField(formData, "time_zone"));
   const parsedUrl = parseLeetCodeProblemUrl(rawUrl);
 
   if (!parsedUrl) {
@@ -217,7 +191,6 @@ export async function addProblemAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/problems");
-  revalidatePath("/review");
   revalidatePath("/practice-history");
   redirect(`${returnTo}?message=added`);
 }
