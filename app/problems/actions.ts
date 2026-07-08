@@ -178,6 +178,5 @@ export async function addProblemAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/problems");
-  revalidatePath("/practice-history");
   redirect(`${returnTo}?message=added`);
 }

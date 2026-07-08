@@ -4,43 +4,43 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   submitProblemReview,
+  snoozeProblemReview,
   type ReviewRating,
 } from "@/data/reviews";
+import {
+  getStringField,
+  getTrimmedStringField,
+  isUuid,
+  parseExpectedVersion,
+} from "@/lib/form-data";
 import { createClient } from "@/lib/supabase/server";
 
+import {
+  isValidTimeZone,
+  normalizeTimeZone,
+} from "@/lib/time-zone";
+
 const validRatings = new Set<ReviewRating>(["again", "hard", "good", "easy"]);
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const controlledRpcMessages = new Set([
   "stale_review",
   "problem_not_due",
   "invalid_rating",
+  "invalid_submission",
+  "invalid_time_zone",
+  "not_found",
   "not_authenticated",
+  "problem_not_active",
 ]);
-const allowedReturnPaths = new Set(["/dashboard", "/review"]);
+const allowedReturnPaths = new Set(["/dashboard"]);
 
 type DatabaseError = {
   code?: string;
   message?: string;
 };
 
-function getStringField(formData: FormData, name: string) {
-  const value = formData.get(name);
-  return typeof value === "string" ? value : "";
-}
-
-function parseExpectedVersion(value: string) {
-  if (!/^\d+$/.test(value)) {
-    return null;
-  }
-
-  const parsed = Number(value);
-  return Number.isSafeInteger(parsed) ? parsed : null;
-}
-
 function getReturnPath(formData: FormData) {
   const value = getStringField(formData, "return_to");
-  return allowedReturnPaths.has(value) ? value : "/review";
+  return allowedReturnPaths.has(value) ? value : "/dashboard";
 }
 
 function getControlledRpcMessage(error: DatabaseError) {
@@ -51,13 +51,13 @@ function getControlledRpcMessage(error: DatabaseError) {
   return controlledRpcMessages.has(error.message) ? error.message : null;
 }
 
-function logReviewError(error: DatabaseError) {
+function logReviewError(operation: string, error: DatabaseError) {
   if (process.env.NODE_ENV === "production") {
     return;
   }
 
-  console.error("Review submission error", {
-    operation: "submit_problem_review",
+  console.error("Review action error", {
+    operation,
     code: error.code ?? null,
     message: error.message ?? null,
   });
@@ -72,7 +72,7 @@ export async function submitReviewAction(formData: FormData) {
   );
 
   if (
-    !uuidPattern.test(userProblemId) ||
+    !isUuid(userProblemId) ||
     !validRatings.has(rating) ||
     expectedScheduleVersion === null
   ) {
@@ -93,7 +93,7 @@ export async function submitReviewAction(formData: FormData) {
   });
 
   if (error) {
-    logReviewError(error);
+    logReviewError("submit_problem_review", error);
 
     const controlledMessage = getControlledRpcMessage(error);
 
@@ -109,8 +109,60 @@ export async function submitReviewAction(formData: FormData) {
   }
 
   revalidatePath("/dashboard");
-  revalidatePath("/review");
   revalidatePath("/problems");
-  revalidatePath("/practice-history");
   redirect(`${returnTo}?message=reviewed`);
+}
+
+export async function snoozeReviewAction(formData: FormData){
+  const returnTo = getReturnPath(formData);
+  const userProblemId = getStringField(formData, "user_problem_id");
+  const expectedScheduleVersion = parseExpectedVersion(
+    getStringField(formData, "expected_schedule_version"),
+  );
+  const timeZone = normalizeTimeZone(
+    getTrimmedStringField(formData, "time_zone"),
+  );
+
+  // Validating submitted fields
+  if (!isUuid(userProblemId) || expectedScheduleVersion === null) {
+    redirect(`${returnTo}?error=invalid_submission`);
+  }
+  if (!timeZone || !isValidTimeZone(timeZone)) {
+    redirect(`${returnTo}?error=invalid_time_zone`);
+  }
+
+  // Auth 
+  const supabase = await createClient();
+  const { data, error: claimsError } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+  if (claimsError || !userId) {
+    redirect("/sign-in")
+  }
+
+  // Call snoozeProblemReview RPC
+  const { error } = await snoozeProblemReview(supabase, {
+    userProblemId,
+    timeZone,
+    expectedScheduleVersion
+  });
+
+  if (error) {
+    logReviewError("snooze_problem_review", error);
+
+    const controlledMessage = getControlledRpcMessage(error);
+
+    if (controlledMessage === "not_authenticated") {
+      redirect("/sign-in");
+    }
+
+    if (controlledMessage) {
+      redirect(`${returnTo}?error=${controlledMessage}`);
+    }
+
+    redirect(`${returnTo}?error=save_failed`);
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/problems");
+  redirect(`${returnTo}?message=snoozed`);
 }

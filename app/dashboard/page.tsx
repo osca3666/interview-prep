@@ -24,6 +24,8 @@ function getDashboardMessage(value: string | string[] | undefined) {
       return "Problem added.";
     case "reviewed":
       return "Review saved.";
+    case "snoozed":
+      return "Review snoozed until tomorrow.";
     default:
       return null;
   }
@@ -47,6 +49,10 @@ function getDashboardError(value: string | string[] | undefined) {
       return "Choose a valid review rating.";
     case "problem_not_due":
       return "This problem is no longer available for review.";
+    case "not_found":
+      return "This problem is no longer available.";
+    case "problem_not_active":
+      return "This problem is no longer active.";
     case "stale_review":
       return "This problem was already reviewed or changed. Your queue has been refreshed.";
     case "save_failed":
