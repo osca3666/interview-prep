@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { DifficultyBadge } from "@/components/problem-table-primitives";
 import { type RoadmapProgress } from "@/data/roadmap-progress";
 
 type RoadmapProgressCardProps = {
@@ -22,19 +24,6 @@ const stats: Array<{
   { key: "strongCount", label: "Strong" },
 ];
 
-function getDifficultyBadgeClassName(difficulty: string) {
-  switch (difficulty.toLowerCase()) {
-    case "easy":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300";
-    case "medium":
-      return "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300";
-    case "hard":
-      return "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300";
-    default:
-      return "border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
-  }
-}
-
 export function RoadmapProgressCard({ progress }: RoadmapProgressCardProps) {
   const progressPercent =
     progress.totalInRoadmap === 0
@@ -53,9 +42,17 @@ export function RoadmapProgressCard({ progress }: RoadmapProgressCardProps) {
             {progress.label}
           </h2>
         </div>
-        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          {progress.trackedCount}/{progress.totalInRoadmap} tracked
-        </p>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+            {progress.trackedCount}/{progress.totalInRoadmap} tracked
+          </p>
+          <Link
+            href="/roadmaps/neetcode-150"
+            className="text-sm font-semibold text-sky-700 underline-offset-4 transition hover:text-sky-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 dark:text-sky-300 dark:hover:text-sky-200 dark:focus-visible:ring-sky-800"
+          >
+            View roadmap
+          </Link>
+        </div>
       </div>
 
       <div className="px-5 py-4">
@@ -123,14 +120,10 @@ export function RoadmapProgressCard({ progress }: RoadmapProgressCardProps) {
                           {problem.pattern}
                         </p>
                       </div>
-                      <span
-                        className={[
-                          "shrink-0 rounded-md border px-2 py-1 text-xs font-medium",
-                          getDifficultyBadgeClassName(problem.difficulty),
-                        ].join(" ")}
-                      >
-                        {problem.difficulty}
-                      </span>
+                      <DifficultyBadge
+                        difficulty={problem.difficulty}
+                        className="shrink-0"
+                      />
                     </div>
                   </li>
                 ))}

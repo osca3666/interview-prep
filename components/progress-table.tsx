@@ -3,6 +3,10 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { LocalDate } from "@/components/local-date";
 import { MasteryBoxes } from "@/components/mastery-boxes";
+import {
+  DifficultyBadge,
+  ProblemTitleLink,
+} from "@/components/problem-table-primitives";
 import { type PracticeHistoryProblem } from "@/data/practice-history";
 
 type ProgressTableProps = {
@@ -12,19 +16,6 @@ type ProgressTableProps = {
   emptyTitle?: string;
   emptyDescription?: string;
 };
-
-function getDifficultyBadgeClassName(difficulty: string) {
-  switch (difficulty.toLowerCase()) {
-    case "easy":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300";
-    case "medium":
-      return "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300";
-    case "hard":
-      return "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300";
-    default:
-      return "border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
-  }
-}
 
 export function ProgressTable({
   problems,
@@ -152,35 +143,14 @@ export function ProgressTable({
                   >
                     <div className={problemBodyCellClassName} role="cell">
                       <div className="min-w-0">
-                        {problem.leetcode_url ? (
-                          <a
-                            href={problem.leetcode_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            title={problem.title}
-                            className="block truncate font-semibold text-zinc-950 underline-offset-4 transition hover:text-sky-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 dark:text-zinc-100 dark:hover:text-sky-300 dark:focus-visible:ring-sky-800"
-                          >
-                            {problem.title}
-                          </a>
-                        ) : (
-                          <div
-                            className="truncate font-semibold text-zinc-950 dark:text-zinc-100"
-                            title={problem.title}
-                          >
-                            {problem.title}
-                          </div>
-                        )}
+                        <ProblemTitleLink
+                          title={problem.title}
+                          leetcodeUrl={problem.leetcode_url}
+                        />
                       </div>
                     </div>
                     <div className={centeredBodyCellClassName} role="cell">
-                      <span
-                        className={[
-                          "rounded-md border px-2 py-1 text-xs font-medium",
-                          getDifficultyBadgeClassName(problem.difficulty),
-                        ].join(" ")}
-                      >
-                        {problem.difficulty}
-                      </span>
+                      <DifficultyBadge difficulty={problem.difficulty} />
                     </div>
                     <div className={centeredBodyCellClassName} role="cell">
                       <div className="inline-flex">

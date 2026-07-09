@@ -33,7 +33,7 @@ export function AddProblemDialog() {
 
       {isOpen ? (
         <div
-          className="scrollbar-app fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-zinc-950/40 px-4 py-6 backdrop-blur-sm sm:py-10 dark:bg-black/60"
+          className="scrollbar-app fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-zinc-950/40 px-4 pt-12 pb-6 backdrop-blur-sm sm:pt-20 sm:pb-10 dark:bg-black/60"
           role="presentation"
           onMouseDown={() => setIsOpen(false)}
         >

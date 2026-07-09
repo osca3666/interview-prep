@@ -20,6 +20,38 @@ type RoadmapUserProblem = Pick<
   | "next_review_at"
   | "lifecycle_state"
 >;
+type RoadmapDetailUserProblem = Pick<
+  Tables<"user_problems">,
+  | "id"
+  | "leetcode_slug"
+  | "mastery_score"
+  | "review_stage"
+  | "total_reviews"
+  | "last_reviewed_at"
+  | "next_review_at"
+>;
+
+export type RoadmapProblemStatus =
+  | "untracked"
+  | "planned"
+  | "reviewed"
+  | "strong";
+
+export type RoadmapProblemRow = {
+  order: number;
+  slug: string;
+  title: string;
+  difficulty: ProblemSetItem["difficulty"];
+  pattern: string;
+  leetcode_url: string;
+  status: RoadmapProblemStatus;
+  userProblemId: string | null;
+  masteryScore: number | null;
+  reviewStage: number | null;
+  totalReviews: number | null;
+  lastReviewedAt: string | null;
+  nextReviewAt: string | null;
+};
 
 export type RoadmapProgress = {
   label: string;
@@ -34,6 +66,73 @@ export type RoadmapProgress = {
 
 function isStrongProblem(problem: RoadmapUserProblem) {
   return problem.mastery_score >= 8 || problem.review_stage >= 4;
+}
+
+function getRoadmapProblemStatus(
+  problem: RoadmapDetailUserProblem | undefined,
+): RoadmapProblemStatus {
+  if (!problem) {
+    return "untracked";
+  }
+
+  if (problem.mastery_score >= 8 || problem.review_stage >= 4) {
+    return "strong";
+  }
+
+  if (problem.total_reviews > 0) {
+    return "reviewed";
+  }
+
+  return "planned";
+}
+
+export async function listNeetcode150RoadmapRows(
+  supabase: TypedSupabaseClient,
+  userId: string,
+) {
+  const problemsResult = await supabase
+    .from("user_problems")
+    .select(
+      "id,leetcode_slug,mastery_score,review_stage,total_reviews,last_reviewed_at,next_review_at",
+    )
+    .eq("user_id", userId);
+
+  if (problemsResult.error) {
+    return {
+      data: null,
+      error: problemsResult.error,
+    };
+  }
+
+  const userProblemsBySlug = new Map(
+    (problemsResult.data ?? []).map((problem) => [
+      problem.leetcode_slug,
+      problem,
+    ]),
+  );
+
+  return {
+    data: neetcode150Problems.map((roadmapProblem) => {
+      const userProblem = userProblemsBySlug.get(roadmapProblem.slug);
+
+      return {
+        order: roadmapProblem.order,
+        slug: roadmapProblem.slug,
+        title: roadmapProblem.title,
+        difficulty: roadmapProblem.difficulty,
+        pattern: roadmapProblem.pattern,
+        leetcode_url: roadmapProblem.leetcode_url,
+        status: getRoadmapProblemStatus(userProblem),
+        userProblemId: userProblem?.id ?? null,
+        masteryScore: userProblem?.mastery_score ?? null,
+        reviewStage: userProblem?.review_stage ?? null,
+        totalReviews: userProblem?.total_reviews ?? null,
+        lastReviewedAt: userProblem?.last_reviewed_at ?? null,
+        nextReviewAt: userProblem?.next_review_at ?? null,
+      } satisfies RoadmapProblemRow;
+    }),
+    error: null,
+  };
 }
 
 export async function getRoadmapProgress(

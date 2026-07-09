@@ -100,7 +100,7 @@ export function ProblemStartingStatusFields() {
               <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                 How did it go?
               </legend>
-              <div className="mt-2 grid grid-cols-2 gap-2">
+              <div className="mt-2 grid grid-cols-3 gap-2">
                 {ratings.map((rating) => (
                   <label
                     key={rating.value}

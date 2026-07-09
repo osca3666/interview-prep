@@ -77,6 +77,7 @@ export function AddProblemForm({
               type="text"
               required
               maxLength={160}
+              placeholder="Two Sum"
               className={fieldClassName}
             />
           </div>
