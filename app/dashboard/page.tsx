@@ -4,8 +4,10 @@ import { AddProblemDialog } from "@/components/add-problem-dialog";
 import { CurrentGoalCard } from "@/components/current-goal-card";
 import { ProgressTable } from "@/components/progress-table";
 import { ReviewQueueSection } from "@/components/review-queue-section";
+import { RoadmapProgressCard } from "@/components/roadmap-progress-card";
 import { ToastMessage } from "@/components/toast-message";
 import { listPracticeHistory } from "@/data/practice-history";
+import { getRoadmapProgress } from "@/data/roadmap-progress";
 import { listDueProblems } from "@/data/reviews";
 import { createClient } from "@/lib/supabase/server";
 
@@ -75,11 +77,17 @@ export default async function Dashboard({
     redirect("/sign-in");
   }
 
-  const [{ error, message }, dueProblemsResult, progressResult] =
+  const [
+    { error, message },
+    dueProblemsResult,
+    progressResult,
+    roadmapProgressResult,
+  ] =
     await Promise.all([
       searchParams,
       listDueProblems(supabase, userId),
       listPracticeHistory(supabase, userId),
+      getRoadmapProgress(supabase, userId),
     ]);
 
   if (dueProblemsResult.error) {
@@ -90,10 +98,19 @@ export default async function Dashboard({
     throw new Error("Failed to load progress.");
   }
 
+  if (roadmapProgressResult.error) {
+    throw new Error("Failed to load roadmap progress.");
+  }
+
   const pageMessage = getDashboardMessage(message);
   const pageError = pageMessage ? null : getDashboardError(error);
   const dueProblems = dueProblemsResult.data ?? [];
   const progressProblems = progressResult.data ?? [];
+  const roadmapProgress = roadmapProgressResult.data;
+
+  if (!roadmapProgress) {
+    throw new Error("Failed to load roadmap progress.");
+  }
 
   return (
     <div className="bg-zinc-50 dark:bg-zinc-950">
@@ -133,6 +150,10 @@ export default async function Dashboard({
 
         <div className="mt-8">
           <CurrentGoalCard />
+        </div>
+
+        <div className="mt-4">
+          <RoadmapProgressCard progress={roadmapProgress} />
         </div>
 
         <div className="mt-8">
