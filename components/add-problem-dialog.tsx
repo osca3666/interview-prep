@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { AddProblemForm } from "@/components/add-problem-form";
+import { type LeetCodeProblemSearchOption } from "@/lib/leetcode-catalog-types";
 
-export function AddProblemDialog() {
+type AddProblemDialogProps = {
+  problemOptions: LeetCodeProblemSearchOption[];
+};
+
+export function AddProblemDialog({ problemOptions }: AddProblemDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -60,7 +65,11 @@ export function AddProblemDialog() {
                 X
               </button>
             </div>
-            <AddProblemForm returnTo="/dashboard" variant="modal" />
+            <AddProblemForm
+              returnTo="/dashboard"
+              problemOptions={problemOptions}
+              variant="modal"
+            />
           </div>
         </div>
       ) : null}

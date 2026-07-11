@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createUserProblem } from "@/data/problems";
 import { isValidDateOnly } from "@/lib/date-only";
 import { getTrimmedStringField } from "@/lib/form-data";
-import { parseLeetCodeProblemUrl } from "@/lib/leetcode";
+import { getLeetCodeProblemByFrontendId } from "@/lib/leetcode-catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
   getDateOnlyInTimeZone,
@@ -13,10 +13,8 @@ import {
   normalizeTimeZone,
 } from "@/lib/time-zone";
 
-const titleMaxLength = 160;
 const patternMaxLength = 80;
 const notesMaxLength = 4000;
-const validDifficulties = new Set(["easy", "medium", "hard"]);
 const validStartModes = new Set(["practiced", "scheduled"]);
 const validRatings = new Set(["again", "hard", "good", "easy"]);
 const controlledRpcMessages = new Set([
@@ -69,12 +67,8 @@ export async function addProblemAction(formData: FormData) {
     redirect("/sign-in");
   }
 
-  const rawUrl = getTrimmedStringField(formData, "leetcode_url");
-  const title = getTrimmedStringField(formData, "title");
-  const difficulty = getTrimmedStringField(
-    formData,
-    "difficulty",
-  ).toLowerCase();
+  const frontendId = getTrimmedStringField(formData, "leetcode_frontend_id");
+  const catalogProblem = getLeetCodeProblemByFrontendId(frontendId);
   const pattern = getTrimmedStringField(formData, "pattern");
   const notes = getTrimmedStringField(formData, "notes");
   const startMode = getTrimmedStringField(formData, "start_mode");
@@ -84,16 +78,12 @@ export async function addProblemAction(formData: FormData) {
   const timeZone = normalizeTimeZone(
     getTrimmedStringField(formData, "time_zone"),
   );
-  const parsedUrl = parseLeetCodeProblemUrl(rawUrl);
 
-  if (!parsedUrl) {
-    redirect(`${returnTo}?error=invalid_url`);
+  if (!catalogProblem) {
+    redirect(`${returnTo}?error=invalid_problem`);
   }
 
   if (
-    title.length === 0 ||
-    title.length > titleMaxLength ||
-    !validDifficulties.has(difficulty) ||
     pattern.length > patternMaxLength ||
     notes.length > notesMaxLength ||
     !validStartModes.has(startMode)
@@ -132,10 +122,10 @@ export async function addProblemAction(formData: FormData) {
   }
 
   const { error } = await createUserProblem(supabase, {
-    p_leetcode_slug: parsedUrl.slug,
-    p_leetcode_url: parsedUrl.canonicalUrl,
-    p_title: title,
-    p_difficulty: difficulty,
+    p_leetcode_slug: catalogProblem.slug,
+    p_leetcode_url: catalogProblem.leetcodeUrl,
+    p_title: catalogProblem.title,
+    p_difficulty: catalogProblem.difficulty,
     p_pattern: pattern,
     p_notes: notes,
     p_start_mode: startMode,

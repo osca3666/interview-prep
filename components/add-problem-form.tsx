@@ -1,8 +1,11 @@
 import { addProblemAction } from "@/app/problems/actions";
+import { LeetCodeProblemCombobox } from "@/components/leetcode-problem-combobox";
 import { ProblemStartingStatusFields } from "@/components/problem-starting-status-fields";
+import { type LeetCodeProblemSearchOption } from "@/lib/leetcode-catalog-types";
 
 type AddProblemFormProps = {
   returnTo: "/dashboard" | "/problems";
+  problemOptions: LeetCodeProblemSearchOption[];
   variant?: "page" | "modal";
 };
 
@@ -19,6 +22,7 @@ const submitButtonClassName =
 
 export function AddProblemForm({
   returnTo,
+  problemOptions,
   variant = "page",
 }: AddProblemFormProps) {
   const isModal = variant === "modal";
@@ -47,82 +51,23 @@ export function AddProblemForm({
         }
       >
         <div className="space-y-5">
-          <div>
-            <label
-              htmlFor="leetcode_url"
-              className={labelClassName}
-            >
-              LeetCode URL
-            </label>
-            <input
-              id="leetcode_url"
-              name="leetcode_url"
-              type="url"
-              required
-              placeholder="https://leetcode.com/problems/two-sum/"
-              className={fieldClassName}
-            />
-          </div>
+          <LeetCodeProblemCombobox options={problemOptions} />
 
           <div>
             <label
-              htmlFor="title"
+              htmlFor="pattern"
               className={labelClassName}
             >
-              Title
+              Pattern
             </label>
             <input
-              id="title"
-              name="title"
+              id="pattern"
+              name="pattern"
               type="text"
-              required
-              maxLength={160}
-              placeholder="Two Sum"
+              maxLength={80}
+              placeholder="Two pointers"
               className={fieldClassName}
             />
-          </div>
-
-          <div
-            className={
-              isModal ? "grid gap-5 sm:grid-cols-2" : "space-y-5"
-            }
-          >
-            <div>
-              <label
-                htmlFor="difficulty"
-                className={labelClassName}
-              >
-                Difficulty
-              </label>
-              <select
-                id="difficulty"
-                name="difficulty"
-                required
-                defaultValue="medium"
-                className={fieldClassName}
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="pattern"
-                className={labelClassName}
-              >
-                Pattern
-              </label>
-              <input
-                id="pattern"
-                name="pattern"
-                type="text"
-                maxLength={80}
-                placeholder="Two pointers"
-                className={fieldClassName}
-              />
-            </div>
           </div>
 
           <div>

@@ -6,6 +6,7 @@ import { AddProblemForm } from "@/components/add-problem-form";
 import { ProgressTable } from "@/components/progress-table";
 import { ToastMessage } from "@/components/toast-message";
 import { listPracticeHistory } from "@/data/practice-history";
+import { getLeetCodeProblemSearchOptions } from "@/lib/leetcode-catalog";
 import { createClient } from "@/lib/supabase/server";
 
 type SearchParams = Promise<{
@@ -40,6 +41,8 @@ function getProblemError(value: string | string[] | undefined) {
       return "Could not detect a valid timezone. Please refresh and try again.";
     case "invalid_url":
       return "Enter a valid LeetCode problem URL.";
+    case "invalid_problem":
+      return "Choose a valid LeetCode problem from the catalog.";
     case "save_failed":
       return "We could not save that problem. Please try again.";
     default:
@@ -68,6 +71,7 @@ export default async function ProblemsPage({
   const pageMessage = getProblemMessage(message);
   const pageError = pageMessage ? null : getProblemError(error);
   const problems = problemsResult.data ?? [];
+  const problemOptions = getLeetCodeProblemSearchOptions();
 
   if (problemsResult.error) {
     throw new Error("Failed to load problems.");
@@ -121,7 +125,10 @@ export default async function ProblemsPage({
         ) : null}
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,400px)_1fr]">
-          <AddProblemForm returnTo="/problems" />
+          <AddProblemForm
+            returnTo="/problems"
+            problemOptions={problemOptions}
+          />
 
           <ProgressTable
             problems={problems}

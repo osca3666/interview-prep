@@ -9,6 +9,7 @@ import { ToastMessage } from "@/components/toast-message";
 import { listPracticeHistory } from "@/data/practice-history";
 import { getRoadmapProgress } from "@/data/roadmap-progress";
 import { listDueProblems } from "@/data/reviews";
+import { getLeetCodeProblemSearchOptions } from "@/lib/leetcode-catalog";
 import { createClient } from "@/lib/supabase/server";
 
 type SearchParams = Promise<{
@@ -47,6 +48,8 @@ function getDashboardError(value: string | string[] | undefined) {
       return "Could not detect a valid timezone. Please refresh and try again.";
     case "invalid_url":
       return "Enter a valid LeetCode problem URL.";
+    case "invalid_problem":
+      return "Choose a valid LeetCode problem from the catalog.";
     case "invalid_submission":
       return "Choose a valid review rating.";
     case "problem_not_due":
@@ -107,6 +110,7 @@ export default async function Dashboard({
   const dueProblems = dueProblemsResult.data ?? [];
   const progressProblems = progressResult.data ?? [];
   const roadmapProgress = roadmapProgressResult.data;
+  const problemOptions = getLeetCodeProblemSearchOptions();
 
   if (!roadmapProgress) {
     throw new Error("Failed to load roadmap progress.");
@@ -164,7 +168,7 @@ export default async function Dashboard({
           <ProgressTable
             problems={progressProblems}
             title="Progress"
-            headerAction={<AddProblemDialog />}
+            headerAction={<AddProblemDialog problemOptions={problemOptions} />}
           />
         </div>
       </section>
