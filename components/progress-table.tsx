@@ -36,9 +36,10 @@ export function ProgressTable({
 
     return problems.filter((problem) => {
       const searchableText = [
+        problem.leetcode_frontend_id ?? "",
         problem.title,
-        problem.pattern ?? "",
         problem.difficulty,
+        ...problem.leetcode_topics,
       ]
         .join(" ")
         .toLowerCase();

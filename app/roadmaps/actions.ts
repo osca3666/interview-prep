@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createUserProblem } from "@/data/problems";
 import { neetcode150Problems } from "@/data/problem-sets/neetcode-150";
 import { getTrimmedStringField } from "@/lib/form-data";
+import { getLeetCodeProblemBySlug } from "@/lib/leetcode-catalog";
 import { createClient } from "@/lib/supabase/server";
 import {
   getDateOnlyInTimeZone,
@@ -61,8 +62,11 @@ export async function addRoadmapProblemAction(formData: FormData) {
   const roadmapProblem = neetcode150Problems.find(
     (problem) => problem.slug === roadmapSlug,
   );
+  const catalogProblem = roadmapProblem
+    ? getLeetCodeProblemBySlug(roadmapProblem.slug)
+    : null;
 
-  if (!roadmapProblem) {
+  if (!roadmapProblem || !catalogProblem) {
     redirect(`${returnTo}?error=invalid_roadmap_problem`);
   }
 
@@ -85,11 +89,12 @@ export async function addRoadmapProblemAction(formData: FormData) {
   }
 
   const { error } = await createUserProblem(supabase, {
-    p_leetcode_slug: roadmapProblem.slug,
-    p_leetcode_url: roadmapProblem.leetcode_url,
-    p_title: roadmapProblem.title,
-    p_difficulty: roadmapProblem.difficulty,
-    p_pattern: roadmapProblem.pattern,
+    p_leetcode_frontend_id: catalogProblem.frontendId,
+    p_leetcode_slug: catalogProblem.slug,
+    p_leetcode_url: catalogProblem.leetcodeUrl,
+    p_title: catalogProblem.title,
+    p_difficulty: catalogProblem.difficulty,
+    p_leetcode_topics: catalogProblem.topics,
     p_notes: "",
     p_start_mode: "scheduled",
     p_rating: "good",

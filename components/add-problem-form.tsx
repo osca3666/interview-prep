@@ -9,9 +9,6 @@ type AddProblemFormProps = {
   variant?: "page" | "modal";
 };
 
-const fieldClassName =
-  "mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-800 dark:[color-scheme:dark]";
-
 const textareaClassName =
   "mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-800";
 
@@ -52,23 +49,6 @@ export function AddProblemForm({
       >
         <div className="space-y-5">
           <LeetCodeProblemCombobox options={problemOptions} />
-
-          <div>
-            <label
-              htmlFor="pattern"
-              className={labelClassName}
-            >
-              Pattern
-            </label>
-            <input
-              id="pattern"
-              name="pattern"
-              type="text"
-              maxLength={80}
-              placeholder="Two pointers"
-              className={fieldClassName}
-            />
-          </div>
 
           <div>
             <label

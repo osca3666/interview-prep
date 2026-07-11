@@ -10,7 +10,7 @@ Core intended experience:
 2. Choose a built-in roadmap and study goal.
 3. Open the dashboard and know what to study today.
 4. Review previously solved problems through spaced repetition.
-5. See roadmap-specific progress, mastery, and pattern coverage.
+5. See roadmap-specific progress, mastery, and topic/category coverage.
 
 ## Current Route Responsibilities
 
@@ -68,7 +68,7 @@ React form/UI -> Next.js Server Action -> typed data wrapper -> Supabase RPC -> 
 - Untracked roadmap rows can be started with `Start today`.
 - `Start today` is implemented by `addRoadmapProblemAction` in `app/roadmaps/actions.ts`.
 - The roadmap action submits only the roadmap slug, return path, and browser timezone from the client.
-- Trusted title, slug, difficulty, pattern, and LeetCode URL are looked up server-side from the static NeetCode 150 list.
+- Trusted title, slug, difficulty, topics, and LeetCode URL are looked up server-side from canonical metadata.
 - Starting a roadmap problem creates a scheduled `user_problems` row through the existing `create_user_problem_with_timezone` RPC and does not create a review event.
 
 ## Completed LeetCode Import Preview Features

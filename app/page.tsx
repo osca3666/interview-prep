@@ -40,7 +40,7 @@ export default function Home() {
               Track problems
             </h2>
             <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Store the LeetCode link, difficulty, pattern, and notes you need
+              Store canonical LeetCode details and the notes you need
               for later review.
             </p>
           </div>

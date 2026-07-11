@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -11,6 +11,31 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -64,13 +89,14 @@ export type Database = {
           difficulty: string
           id: string
           last_reviewed_at: string | null
+          leetcode_frontend_id: string | null
           leetcode_slug: string
+          leetcode_topics: string[]
           leetcode_url: string
           lifecycle_state: string
           mastery_score: number
           next_review_at: string
           notes: string
-          pattern: string | null
           review_stage: number
           schedule_version: number
           title: string
@@ -83,13 +109,14 @@ export type Database = {
           difficulty: string
           id?: string
           last_reviewed_at?: string | null
+          leetcode_frontend_id?: string | null
           leetcode_slug: string
+          leetcode_topics?: string[]
           leetcode_url: string
           lifecycle_state?: string
           mastery_score?: number
           next_review_at?: string
           notes?: string
-          pattern?: string | null
           review_stage?: number
           schedule_version?: number
           title: string
@@ -102,13 +129,14 @@ export type Database = {
           difficulty?: string
           id?: string
           last_reviewed_at?: string | null
+          leetcode_frontend_id?: string | null
           leetcode_slug?: string
+          leetcode_topics?: string[]
           leetcode_url?: string
           lifecycle_state?: string
           mastery_score?: number
           next_review_at?: string
           notes?: string
-          pattern?: string | null
           review_stage?: number
           schedule_version?: number
           title?: string
@@ -123,33 +151,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_user_problem: {
-        Args: {
-          p_difficulty: string
-          p_leetcode_slug: string
-          p_leetcode_url: string
-          p_notes: string
-          p_pattern: string
-          p_rating: string
-          p_start_date: string
-          p_start_mode: string
-          p_title: string
-        }
-        Returns: {
-          mastery_score: number
-          next_review_at: string
-          review_stage: number
-          total_reviews: number
-          user_problem_id: string
-        }[]
-      }
       create_user_problem_with_timezone: {
         Args: {
           p_difficulty: string
+          p_leetcode_frontend_id: string
           p_leetcode_slug: string
+          p_leetcode_topics: string[]
           p_leetcode_url: string
           p_notes: string
-          p_pattern: string
           p_rating: string
           p_start_date: string
           p_start_mode: string
@@ -312,6 +321,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

@@ -62,8 +62,8 @@ Expected result: auth works, the dashboard loads, and the nav shows signed-in co
 ### 2. Add A Practiced Problem From Dashboard
 
 1. On `/dashboard`, click `+ Add Problem`.
-2. Add a valid LeetCode problem URL.
-3. Enter title, difficulty, optional pattern, and optional notes.
+2. Select a LeetCode problem.
+3. Enter optional notes.
 4. Choose `I practiced this problem`.
 5. Keep practice date as today.
 6. Choose `OK`.
@@ -100,7 +100,7 @@ Expected result: review saves, the due queue updates, and Progress updates the r
 2. Confirm the page is titled `Problem library`.
 3. Add a problem using the inline form.
 4. Confirm the tracked problems table updates.
-5. Use the Progress table search to find a problem by title, difficulty, or pattern.
+5. Use the Progress table search to find a problem by title, problem number, difficulty, or topic.
 
 Expected result: Library works as a supporting tracked-problem browser and inline add page.
 
@@ -156,7 +156,8 @@ Expected result: the app remains readable and usable in both themes.
 - [ ] Modal closes with Escape.
 - [ ] Progress table search filters by title.
 - [ ] Progress table search filters by difficulty.
-- [ ] Progress table search filters by pattern.
+- [ ] Progress table search filters by problem number.
+- [ ] Progress table search filters by LeetCode topic.
 - [ ] Progress table header stays visible while rows scroll.
 
 ### Add Problem

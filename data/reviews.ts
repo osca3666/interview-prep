@@ -8,7 +8,6 @@ export type DueProblem = Pick<
   | "id"
   | "title"
   | "difficulty"
-  | "pattern"
   | "notes"
   | "leetcode_url"
   | "review_stage"
@@ -27,7 +26,7 @@ export async function listDueProblems(
   return supabase
     .from("user_problems")
     .select(
-      "id,title,difficulty,pattern,notes,leetcode_url,review_stage,next_review_at,schedule_version",
+      "id,title,difficulty,notes,leetcode_url,review_stage,next_review_at,schedule_version",
     )
     .eq("user_id", userId)
     .eq("lifecycle_state", "active")

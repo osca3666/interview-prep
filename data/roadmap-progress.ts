@@ -13,7 +13,6 @@ type RoadmapUserProblem = Pick<
   | "leetcode_slug"
   | "title"
   | "difficulty"
-  | "pattern"
   | "mastery_score"
   | "review_stage"
   | "total_reviews"
@@ -142,7 +141,7 @@ export async function getRoadmapProgress(
   const problemsResult = await supabase
     .from("user_problems")
     .select(
-      "leetcode_slug,title,difficulty,pattern,mastery_score,review_stage,total_reviews,next_review_at,lifecycle_state",
+      "leetcode_slug,title,difficulty,mastery_score,review_stage,total_reviews,next_review_at,lifecycle_state",
     )
     .eq("user_id", userId);
 

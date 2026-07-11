@@ -13,7 +13,6 @@ import {
   normalizeTimeZone,
 } from "@/lib/time-zone";
 
-const patternMaxLength = 80;
 const notesMaxLength = 4000;
 const validStartModes = new Set(["practiced", "scheduled"]);
 const validRatings = new Set(["again", "hard", "good", "easy"]);
@@ -69,7 +68,6 @@ export async function addProblemAction(formData: FormData) {
 
   const frontendId = getTrimmedStringField(formData, "leetcode_frontend_id");
   const catalogProblem = getLeetCodeProblemByFrontendId(frontendId);
-  const pattern = getTrimmedStringField(formData, "pattern");
   const notes = getTrimmedStringField(formData, "notes");
   const startMode = getTrimmedStringField(formData, "start_mode");
   const rating = getTrimmedStringField(formData, "rating");
@@ -84,7 +82,6 @@ export async function addProblemAction(formData: FormData) {
   }
 
   if (
-    pattern.length > patternMaxLength ||
     notes.length > notesMaxLength ||
     !validStartModes.has(startMode)
   ) {
@@ -122,11 +119,12 @@ export async function addProblemAction(formData: FormData) {
   }
 
   const { error } = await createUserProblem(supabase, {
+    p_leetcode_frontend_id: catalogProblem.frontendId,
     p_leetcode_slug: catalogProblem.slug,
     p_leetcode_url: catalogProblem.leetcodeUrl,
     p_title: catalogProblem.title,
     p_difficulty: catalogProblem.difficulty,
-    p_pattern: pattern,
+    p_leetcode_topics: catalogProblem.topics,
     p_notes: notes,
     p_start_mode: startMode,
     p_rating: startMode === "practiced" ? rating : "good",

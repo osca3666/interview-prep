@@ -15,7 +15,7 @@ export async function listUserProblems(
   return supabase
     .from("user_problems")
     .select(
-      "id,title,difficulty,pattern,lifecycle_state,next_review_at,leetcode_url,created_at",
+      "id,leetcode_frontend_id,title,difficulty,leetcode_topics,lifecycle_state,next_review_at,leetcode_url,created_at",
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
