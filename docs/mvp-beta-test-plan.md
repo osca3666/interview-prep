@@ -2,7 +2,7 @@
 
 ## MVP Summary
 
-LeetCode Review is a lightweight spaced-repetition tracker for LeetCode practice. The MVP helps a user save problems, schedule review dates, review problems when they are ready, rate each review, and track progress over time.
+LeetCode Review is a lightweight roadmap-based spaced-repetition tracker for LeetCode practice. The MVP helps a user save problems, preview imported LeetCode history, follow a built-in roadmap, review due problems, and track progress over time.
 
 The main workspace is `/dashboard`. The supporting Library page is `/problems`.
 
@@ -14,6 +14,9 @@ Estimated tester time: 10-15 minutes.
 - Shows `/dashboard` as the main review workspace.
 - Lets users add LeetCode problems from the dashboard `+ Add Problem` modal.
 - Lets users add LeetCode problems inline from `/problems`, the Library page.
+- Lets users preview pasted LeetCode Practice History text from `/problems/import`.
+- Shows a NeetCode 150 roadmap checklist/planning page at `/roadmaps/neetcode-150`.
+- Lets users start one untracked roadmap problem for today from the roadmap page.
 - Supports two Add Problem starting states:
   - `I practiced this problem`: counts as the first review/practice event.
   - `I have not practiced it yet`: schedules the first review without counting practice.
@@ -22,6 +25,7 @@ Estimated tester time: 10-15 minutes.
   - `Redo`: retry soon, backend value `"again"`.
   - `OK`: normal progress, backend value `"good"`.
   - `Great`: faster progress, backend value `"easy"`.
+- Lets users use `Skip today` on a due problem without counting it as a review.
 - Shows progress in a shared Progress table with problem title, difficulty, mastery, last reviewed, next review, and review count.
 - Shows tracked problems in the Library page using the shared Progress table.
 - Supports dark/light theme switching.
@@ -31,14 +35,15 @@ Estimated tester time: 10-15 minutes.
 
 The beta should not be evaluated as if these features exist:
 
-- Snooze / Skip Today
-- Roadmaps
+- Confirm/import saved LeetCode history to the database
+- Bulk import persistence
 - Goal planning
 - AI coach
 - Calendar
 - Editing, archiving, or deleting problems
 - Payments
 - Public roadmap publishing
+- Custom or shared roadmaps
 
 ## Tester Script
 
@@ -99,12 +104,35 @@ Expected result: review saves, the due queue updates, and Progress updates the r
 
 Expected result: Library works as a supporting tracked-problem browser and inline add page.
 
-### 6. Check Theme
+### 6. Preview LeetCode Practice History Import
+
+1. Open `/problems/import` from the Library import link.
+2. Open the linked LeetCode Practice History page.
+3. Paste copied Practice History text into the textarea.
+4. Click `Preview import`.
+5. Review the accepted problems, already-in-library problems, ready-to-import problems, skipped attempts, and duplicates removed.
+6. Confirm the import/confirm button is disabled or clearly marked as coming next.
+
+Expected result: the page previews parsed history and Library matches without saving anything to the database.
+
+### 7. Check NeetCode 150 Roadmap
+
+1. Open `/roadmaps/neetcode-150`.
+2. Search for a known problem.
+3. Confirm the table shows roadmap order, problem, pattern, difficulty, and next step.
+4. Find an untracked problem and click `Start today`.
+5. Confirm a success message appears.
+6. Confirm the problem appears in Library or dashboard progress.
+7. Confirm tracked roadmap rows show non-mutating labels such as `Scheduled`, `Reviewed`, or `Strong`.
+
+Expected result: roadmap rows reflect current Library coverage, and `Start today` adds one untracked problem without changing review history.
+
+### 8. Check Theme
 
 1. Toggle between dark and light mode.
 2. Refresh the page.
 3. Confirm the selected theme persists.
-4. Check `/dashboard`, `/problems`, and sign-in/sign-up pages.
+4. Check `/dashboard`, `/problems`, `/problems/import`, `/roadmaps/neetcode-150`, and sign-in/sign-up pages.
 
 Expected result: the app remains readable and usable in both themes.
 
@@ -146,6 +174,10 @@ Expected result: the app remains readable and usable in both themes.
 - [ ] `Redo` submits backend rating `"again"`.
 - [ ] `OK` submits backend rating `"good"`.
 - [ ] `Great` submits backend rating `"easy"`.
+- [ ] `Skip today` is visually separate from review ratings.
+- [ ] `Skip today` removes a due problem from today's queue.
+- [ ] `Skip today` does not increase review count.
+- [ ] `Skip today` does not change mastery.
 - [ ] Review success shows a toast.
 - [ ] Stale or invalid review states show a safe error.
 - [ ] Review cards do not show difficulty, pattern, notes, or hints.
@@ -157,6 +189,29 @@ Expected result: the app remains readable and usable in both themes.
 - [ ] Tracked problems display in the shared Progress table.
 - [ ] Search works in the Library Progress table.
 - [ ] Empty state is clear for a new user.
+
+### Import Preview
+
+- [ ] `/problems/import` is protected for signed-in users.
+- [ ] The LeetCode Practice History link opens `https://leetcode.com/progress/`.
+- [ ] Pasted full-page LeetCode text can be previewed.
+- [ ] Accepted rows appear in preview results.
+- [ ] Non-accepted attempts appear in the skipped section.
+- [ ] Duplicates are counted separately from skipped attempts.
+- [ ] Already-in-Library problems are separated from Ready-to-import problems.
+- [ ] Invalid dates are visibly flagged but do not block preview.
+- [ ] No database write happens from preview.
+- [ ] Confirm import remains disabled or coming soon.
+
+### Roadmap
+
+- [ ] `/roadmaps/neetcode-150` is protected for signed-in users.
+- [ ] Roadmap search filters by title, pattern, or difficulty.
+- [ ] Untracked rows show `Start today`.
+- [ ] `Start today` adds one scheduled problem for today.
+- [ ] Tracked rows show non-mutating labels.
+- [ ] Starting a roadmap problem revalidates dashboard and Library views.
+- [ ] No batch import or full planner controls are shown.
 
 ### Data Isolation
 
@@ -185,8 +240,10 @@ Expected result: the app remains readable and usable in both themes.
 6. Did the Progress table help you understand what is happening over time?
 7. Was anything confusing about dates, due status, or next review timing?
 8. Did you expect to edit, archive, delete, snooze, or skip anything?
-9. Did the app feel too simple, too busy, or about right for a first version?
-10. What is the one thing that would make this useful enough to keep using?
+9. Did the LeetCode history import preview make sense before saving anything?
+10. Did the NeetCode 150 roadmap help you decide what to do next?
+11. Did the app feel too simple, too busy, or about right for a first version?
+12. What is the one thing that would make this useful enough to keep using?
 
 ## Bug Report Template
 
@@ -236,11 +293,12 @@ Any extra context, problem URL, or timing details.
 
 These are intentionally outside the MVP beta scope:
 
-- Snooze / Skip Today
-- Roadmaps
+- Confirm/import saved LeetCode history to the database
+- Bulk import persistence
 - Goal planning
 - AI coach
 - Calendar
 - Editing/archiving/deleting problems
 - Payments
 - Public roadmap publishing
+- Custom/shared roadmaps

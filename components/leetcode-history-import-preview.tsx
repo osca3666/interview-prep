@@ -153,8 +153,9 @@ export function LeetCodeHistoryImportPreview({
             >
               LeetCode Practice History
             </a>
-            , copy the page text, and paste it here. This preview only reads
-            the text.
+            , copy the whole page, and paste it here. We&apos;ll ignore headers,
+            navigation, footers, and other page clutter. Nothing is saved during
+            preview.
           </p>
         </div>
         <div className="p-5">
