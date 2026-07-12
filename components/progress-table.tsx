@@ -18,6 +18,9 @@ type ProgressTableProps = {
   emptyDescription?: string;
   layout?: "fixed" | "auto";
   searchPlaceholder?: string;
+  limit?: number;
+  showSearch?: boolean;
+  showReviews?: boolean;
 };
 
 export function ProgressTable({
@@ -29,6 +32,9 @@ export function ProgressTable({
   emptyDescription = "Track problems and complete reviews to build your history.",
   layout = "fixed",
   searchPlaceholder = "Search problems",
+  limit,
+  showSearch = true,
+  showReviews = true,
 }: ProgressTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputId = `progress-search-${title
@@ -53,10 +59,19 @@ export function ProgressTable({
       return searchableText.includes(normalizedQuery);
     });
   }, [normalizedQuery, problems]);
-  const hasHeaderControls = problems.length > 0 || headerAction;
-  const gridWidthClassName = "min-w-[60rem]";
-  const gridTemplateClassName =
-    "grid grid-cols-[minmax(14rem,1fr)_8rem_8rem_10rem_10rem_8rem]";
+  const visibleProblems = useMemo(
+    () =>
+      typeof limit === "number"
+        ? filteredProblems.slice(0, limit)
+        : filteredProblems,
+    [filteredProblems, limit],
+  );
+  const hasHeaderControls =
+    (showSearch && problems.length > 0) || Boolean(headerAction);
+  const gridWidthClassName = showReviews ? "min-w-[60rem]" : "min-w-[52rem]";
+  const gridTemplateClassName = showReviews
+    ? "grid grid-cols-[minmax(14rem,1fr)_8rem_8rem_10rem_10rem_8rem]"
+    : "grid grid-cols-[minmax(14rem,1fr)_8rem_8rem_10rem_10rem]";
   const problemHeaderCellClassName = "px-5 py-3";
   const centeredHeaderCellClassName =
     "flex items-center justify-center px-5 py-3 text-center whitespace-nowrap";
@@ -78,7 +93,7 @@ export function ProgressTable({
         )}
         {hasHeaderControls ? (
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-            {problems.length > 0 ? (
+            {showSearch && problems.length > 0 ? (
               <div className="w-full sm:w-72">
                 <label htmlFor={searchInputId} className="sr-only">
                   Search progress
@@ -133,9 +148,14 @@ export function ProgressTable({
               <div className={centeredHeaderCellClassName} role="columnheader">
                 Next review
               </div>
-              <div className={centeredHeaderCellClassName} role="columnheader">
-                Reviews
-              </div>
+              {showReviews ? (
+                <div
+                  className={centeredHeaderCellClassName}
+                  role="columnheader"
+                >
+                  Reviews
+                </div>
+              ) : null}
             </div>
             {filteredProblems.length === 0 ? (
               <div className={`${gridWidthClassName} p-6`}>
@@ -148,7 +168,7 @@ export function ProgressTable({
                 className={`${gridWidthClassName} divide-y divide-zinc-200 bg-white text-left text-sm dark:divide-zinc-800 dark:bg-zinc-900`}
                 role="rowgroup"
               >
-                {filteredProblems.map((problem) => (
+                {visibleProblems.map((problem) => (
                   <div
                     key={problem.id}
                     className={`${gridTemplateClassName} dark:hover:bg-zinc-800/40`}
@@ -186,12 +206,14 @@ export function ProgressTable({
                     >
                       <LocalDate value={problem.next_review_at} fallback="-" />
                     </div>
-                    <div
-                      className={`${centeredBodyCellClassName} font-medium text-zinc-800 dark:text-zinc-200`}
-                      role="cell"
-                    >
-                      {problem.total_reviews}
-                    </div>
+                    {showReviews ? (
+                      <div
+                        className={`${centeredBodyCellClassName} font-medium text-zinc-800 dark:text-zinc-200`}
+                        role="cell"
+                      >
+                        {problem.total_reviews}
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>

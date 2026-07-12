@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { AddProblemForm } from "@/components/add-problem-form";
 import { type LeetCodeProblemSearchOption } from "@/lib/leetcode-catalog-types";
 
@@ -11,6 +11,7 @@ type AddProblemDialogProps = {
   open?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
   triggerLabel?: string;
+  triggerContent?: ReactNode;
   triggerClassName?: string;
   showTrigger?: boolean;
 };
@@ -22,6 +23,7 @@ export function AddProblemDialog({
   open,
   onOpenChange,
   triggerLabel = "+ Track Problem",
+  triggerContent,
   triggerClassName = "inline-flex h-11 w-full items-center justify-center rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 sm:w-auto dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white",
   showTrigger = true,
 }: AddProblemDialogProps) {
@@ -59,7 +61,7 @@ export function AddProblemDialog({
           onClick={() => setIsOpen(true)}
           className={triggerClassName}
         >
-          {triggerLabel}
+          {triggerContent ?? triggerLabel}
         </button>
       ) : null}
 

@@ -69,7 +69,7 @@ export function ProblemTitleLink({
         target="_blank"
         rel="noreferrer"
         title={displayTitle}
-        className={`${titleClassName} underline-offset-4 transition hover:text-sky-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 dark:hover:text-sky-300 dark:focus-visible:ring-sky-800`}
+        className={`${titleClassName} transition hover:text-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 dark:hover:text-sky-300 dark:focus-visible:ring-sky-800`}
       >
         {content}
       </a>

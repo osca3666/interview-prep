@@ -1,5 +1,7 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ListPlus } from "lucide-react";
 import { AddProblemDialog } from "@/components/add-problem-dialog";
 import { CurrentGoalCard } from "@/components/current-goal-card";
 import { ProgressTable } from "@/components/progress-table";
@@ -119,7 +121,7 @@ export default async function Dashboard({
   return (
     <div className="bg-zinc-50 dark:bg-zinc-950">
       <section className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-col gap-2">
             <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
               Dashboard
@@ -128,6 +130,16 @@ export default async function Dashboard({
               Review workspace
             </h1>
           </div>
+          <AddProblemDialog
+            problemOptions={problemOptions}
+            triggerContent={
+              <>
+                <ListPlus className="h-4 w-4" aria-hidden="true" />
+                Track Problem
+              </>
+            }
+            triggerClassName="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 sm:w-auto dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
+          />
         </div>
 
         {pageMessage ? (
@@ -156,19 +168,29 @@ export default async function Dashboard({
           <CurrentGoalCard />
         </div>
 
-        <div className="mt-4">
-          <RoadmapProgressCard progress={roadmapProgress} />
-        </div>
-
         <div className="mt-8">
           <ReviewQueueSection dueProblems={dueProblems} returnTo="/dashboard" />
         </div>
 
         <div className="mt-8">
+          <RoadmapProgressCard progress={roadmapProgress} />
+        </div>
+
+        <div className="mt-8">
           <ProgressTable
             problems={progressProblems}
-            title="Progress"
-            headerAction={<AddProblemDialog problemOptions={problemOptions} />}
+            title="Recent problems"
+            layout="auto"
+            limit={5}
+            showSearch={false}
+            headerAction={
+              <Link
+                href="/problems"
+                className="inline-flex h-9 w-full items-center justify-center rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 sm:w-auto dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                View all problems
+              </Link>
+            }
           />
         </div>
       </section>

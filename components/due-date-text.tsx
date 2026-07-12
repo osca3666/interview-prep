@@ -59,7 +59,7 @@ function getDueInfo(value: string): DueDateInfo {
 
     return {
       text: `${overdueText} (${formatted})`,
-      badgeText: overdueText,
+      badgeText: `${diffDays}d overdue`,
       state: "overdue",
     };
   }
