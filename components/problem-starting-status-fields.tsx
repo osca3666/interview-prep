@@ -67,7 +67,7 @@ export function ProblemStartingStatusFields() {
           />
           <span>
             <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-200">
-              I practiced this problem
+              Practiced
             </span>
             <span className="block text-xs leading-5 text-zinc-500 dark:text-zinc-400">
               Use this when you already worked on the problem.
@@ -82,7 +82,7 @@ export function ProblemStartingStatusFields() {
                 htmlFor="practice_date"
                 className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
               >
-                Practice date
+                Date
               </label>
               <input
                 id="practice_date"
@@ -132,7 +132,7 @@ export function ProblemStartingStatusFields() {
           />
           <span>
             <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-200">
-              I have not practiced it yet
+              Schedule
             </span>
             <span className="block text-xs leading-5 text-zinc-500 dark:text-zinc-400">
               Use this to choose when it first appears in review.

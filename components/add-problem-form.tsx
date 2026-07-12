@@ -7,10 +7,11 @@ type AddProblemFormProps = {
   returnTo: "/dashboard" | "/problems";
   problemOptions: LeetCodeProblemSearchOption[];
   variant?: "page" | "modal";
+  initialFrontendId?: string | null;
 };
 
 const textareaClassName =
-  "mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-800";
+  "mt-2 block w-full flex-1 resize-y rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-800";
 
 const labelClassName = "block text-sm font-medium text-zinc-700 dark:text-zinc-300";
 
@@ -21,6 +22,7 @@ export function AddProblemForm({
   returnTo,
   problemOptions,
   variant = "page",
+  initialFrontendId,
 }: AddProblemFormProps) {
   const isModal = variant === "modal";
 
@@ -36,7 +38,7 @@ export function AddProblemForm({
       <input type="hidden" name="return_to" value={returnTo} />
       {isModal ? null : (
         <h2 className="text-base font-semibold text-zinc-950 dark:text-zinc-100">
-          Add problem
+          Track a problem
         </h2>
       )}
 
@@ -47,10 +49,13 @@ export function AddProblemForm({
             : "mt-5 space-y-5"
         }
       >
-        <div className="space-y-5">
-          <LeetCodeProblemCombobox options={problemOptions} />
+        <div className="flex min-h-0 flex-col gap-5">
+          <LeetCodeProblemCombobox
+            options={problemOptions}
+            initialFrontendId={initialFrontendId}
+          />
 
-          <div>
+          <div className="flex min-h-[12rem] flex-1 flex-col">
             <label
               htmlFor="notes"
               className={labelClassName}
@@ -61,7 +66,7 @@ export function AddProblemForm({
               id="notes"
               name="notes"
               maxLength={4000}
-              rows={isModal ? 7 : 5}
+              rows={isModal ? 10 : 7}
               className={textareaClassName}
             />
           </div>
@@ -85,7 +90,7 @@ export function AddProblemForm({
               : submitButtonClassName
           }
         >
-          Add problem
+          Track problem
         </button>
       </div>
     </form>

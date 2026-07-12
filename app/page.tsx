@@ -12,7 +12,7 @@ export default function Home() {
             Keep LeetCode problems fresh without turning review into a chore.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Add problems, see what is due, and build a durable review habit
+            Track problems, see what is due, and build a durable review habit
             around the patterns you are actively learning.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">

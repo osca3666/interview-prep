@@ -3,6 +3,7 @@ import "server-only";
 import leetcodeProblems from "@/data/leetcode-problems.json";
 import {
   type LeetCodeCatalogProblem,
+  type LeetCodeProblemLibraryOption,
   type LeetCodeProblemSearchOption,
 } from "@/lib/leetcode-catalog-types";
 
@@ -30,4 +31,18 @@ export function getLeetCodeProblemSearchOptions(): LeetCodeProblemSearchOption[]
     difficulty,
     paidOnly,
   }));
+}
+
+export function getLeetCodeProblemLibraryOptions(): LeetCodeProblemLibraryOption[] {
+  return catalogProblems.map(
+    ({ frontendId, slug, title, difficulty, paidOnly, topics, leetcodeUrl }) => ({
+      frontendId,
+      slug,
+      title,
+      difficulty,
+      paidOnly,
+      topics,
+      leetcodeUrl,
+    }),
+  );
 }

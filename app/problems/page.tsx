@@ -2,11 +2,14 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Upload } from "lucide-react";
-import { AddProblemForm } from "@/components/add-problem-form";
-import { ProgressTable } from "@/components/progress-table";
+import { AddProblemDialog } from "@/components/add-problem-dialog";
+import { ProblemLibraryView } from "@/components/problem-library-view";
 import { ToastMessage } from "@/components/toast-message";
 import { listPracticeHistory } from "@/data/practice-history";
-import { getLeetCodeProblemSearchOptions } from "@/lib/leetcode-catalog";
+import {
+  getLeetCodeProblemLibraryOptions,
+  getLeetCodeProblemSearchOptions,
+} from "@/lib/leetcode-catalog";
 import { createClient } from "@/lib/supabase/server";
 
 type SearchParams = Promise<{
@@ -21,7 +24,7 @@ function getFirstParam(value: string | string[] | undefined) {
 function getProblemMessage(value: string | string[] | undefined) {
   switch (getFirstParam(value)) {
     case "added":
-      return "Problem added.";
+      return "Problem tracked.";
     default:
       return null;
   }
@@ -30,7 +33,7 @@ function getProblemMessage(value: string | string[] | undefined) {
 function getProblemError(value: string | string[] | undefined) {
   switch (getFirstParam(value)) {
     case "already_added":
-      return "You already added this problem.";
+      return "You're already tracking this problem.";
     case "invalid_form":
       return "Check the problem details and try again.";
     case "invalid_date":
@@ -71,6 +74,7 @@ export default async function ProblemsPage({
   const pageMessage = getProblemMessage(message);
   const pageError = pageMessage ? null : getProblemError(error);
   const problems = problemsResult.data ?? [];
+  const catalogProblems = getLeetCodeProblemLibraryOptions();
   const problemOptions = getLeetCodeProblemSearchOptions();
 
   if (problemsResult.error) {
@@ -89,17 +93,22 @@ export default async function ProblemsPage({
               Problem library
             </h1>
             <p className="max-w-2xl text-base leading-7 text-zinc-600 dark:text-zinc-400">
-              Add new LeetCode problems and browse everything you are tracking
-              for review.
+              Track LeetCode problems and manage your review library.
             </p>
           </div>
-          <Link
-            href="/problems/import"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-          >
-            <Upload className="h-4 w-4" aria-hidden="true" />
-            Import LeetCode history
-          </Link>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <AddProblemDialog
+              problemOptions={problemOptions}
+              returnTo="/problems"
+            />
+            <Link
+              href="/problems/import"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              Import from LeetCode
+            </Link>
+          </div>
         </div>
 
         {pageMessage ? (
@@ -124,19 +133,11 @@ export default async function ProblemsPage({
           </Suspense>
         ) : null}
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,400px)_1fr]">
-          <AddProblemForm
-            returnTo="/problems"
-            problemOptions={problemOptions}
-          />
-
-          <ProgressTable
-            problems={problems}
-            title="Tracked problems"
-            emptyTitle="No problems yet"
-            emptyDescription="Add your first LeetCode problem to start building your review library."
-          />
-        </div>
+        <ProblemLibraryView
+          trackedProblems={problems}
+          catalogProblems={catalogProblems}
+          problemOptions={problemOptions}
+        />
       </section>
     </div>
   );

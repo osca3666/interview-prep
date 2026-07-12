@@ -13,16 +13,22 @@ type ProgressTableProps = {
   problems: PracticeHistoryProblem[];
   title: string;
   headerAction?: ReactNode;
+  headerContent?: ReactNode;
   emptyTitle?: string;
   emptyDescription?: string;
+  layout?: "fixed" | "auto";
+  searchPlaceholder?: string;
 };
 
 export function ProgressTable({
   problems,
   title,
   headerAction,
+  headerContent,
   emptyTitle = "No practice history yet",
-  emptyDescription = "Add problems and complete reviews to build your history.",
+  emptyDescription = "Track problems and complete reviews to build your history.",
+  layout = "fixed",
+  searchPlaceholder = "Search problems",
 }: ProgressTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputId = `progress-search-${title
@@ -57,13 +63,19 @@ export function ProgressTable({
   const problemBodyCellClassName = "min-w-0 px-5 py-4";
   const centeredBodyCellClassName =
     "flex items-center justify-center px-5 py-4 text-center whitespace-nowrap";
+  const verticalScrollClassName =
+    layout === "auto"
+      ? "scrollbar-app max-h-[420px] overflow-y-auto"
+      : "scrollbar-app min-h-[320px] max-h-[420px] overflow-y-auto";
 
   return (
     <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex flex-col gap-4 border-b border-zinc-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800">
-        <h2 className="text-base font-semibold text-zinc-950 dark:text-zinc-100">
-          {title}
-        </h2>
+        {headerContent ?? (
+          <h2 className="text-base font-semibold text-zinc-950 dark:text-zinc-100">
+            {title}
+          </h2>
+        )}
         {hasHeaderControls ? (
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
             {problems.length > 0 ? (
@@ -76,7 +88,7 @@ export function ProgressTable({
                   type="search"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Search problems"
+                  placeholder={searchPlaceholder}
                   className="block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
                 />
               </div>
@@ -101,7 +113,7 @@ export function ProgressTable({
         </div>
       ) : (
         <div className="scrollbar-app overflow-x-auto">
-          <div className="scrollbar-app min-h-[320px] max-h-[420px] overflow-y-auto">
+          <div className={verticalScrollClassName}>
             <div
               className={`${gridWidthClassName} ${gridTemplateClassName} sticky top-0 z-10 border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400`}
               role="row"
@@ -146,6 +158,7 @@ export function ProgressTable({
                       <div className="min-w-0">
                         <ProblemTitleLink
                           title={problem.title}
+                          frontendId={problem.leetcode_frontend_id}
                           leetcodeUrl={problem.leetcode_url}
                         />
                       </div>

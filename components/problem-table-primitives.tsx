@@ -6,6 +6,8 @@ type DifficultyBadgeProps = {
 type ProblemTitleLinkProps = {
   title: string;
   leetcodeUrl?: string | null;
+  frontendId?: string | null;
+  truncate?: boolean;
 };
 
 function getDifficultyBadgeClassName(difficulty: string) {
@@ -43,27 +45,43 @@ export function DifficultyBadge({
 export function ProblemTitleLink({
   title,
   leetcodeUrl,
+  frontendId,
+  truncate = true,
 }: ProblemTitleLinkProps) {
+  const displayTitle = frontendId ? `${frontendId}. ${title}` : title;
+  const content = frontendId ? (
+    <>
+      <span className="text-zinc-500 dark:text-zinc-400">{frontendId}.</span>{" "}
+      <span>{title}</span>
+    </>
+  ) : (
+    title
+  );
+  const titleClassName = [
+    "font-semibold text-zinc-950 dark:text-zinc-100",
+    truncate ? "block truncate" : "block min-w-0",
+  ].join(" ");
+
   if (leetcodeUrl) {
     return (
       <a
         href={leetcodeUrl}
         target="_blank"
         rel="noreferrer"
-        title={title}
-        className="block truncate font-semibold text-zinc-950 underline-offset-4 transition hover:text-sky-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 dark:text-zinc-100 dark:hover:text-sky-300 dark:focus-visible:ring-sky-800"
+        title={displayTitle}
+        className={`${titleClassName} underline-offset-4 transition hover:text-sky-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 dark:hover:text-sky-300 dark:focus-visible:ring-sky-800`}
       >
-        {title}
+        {content}
       </a>
     );
   }
 
   return (
     <div
-      className="truncate font-semibold text-zinc-950 dark:text-zinc-100"
-      title={title}
+      className={titleClassName}
+      title={displayTitle}
     >
-      {title}
+      {content}
     </div>
   );
 }

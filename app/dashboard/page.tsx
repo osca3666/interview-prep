@@ -24,7 +24,7 @@ function getFirstParam(value: string | string[] | undefined) {
 function getDashboardMessage(value: string | string[] | undefined) {
   switch (getFirstParam(value)) {
     case "added":
-      return "Problem added.";
+      return "Problem tracked.";
     case "reviewed":
       return "Review saved.";
     case "snoozed":
@@ -37,7 +37,7 @@ function getDashboardMessage(value: string | string[] | undefined) {
 function getDashboardError(value: string | string[] | undefined) {
   switch (getFirstParam(value)) {
     case "already_added":
-      return "You already added this problem.";
+      return "You're already tracking this problem.";
     case "invalid_form":
       return "Check the problem details and try again.";
     case "invalid_rating":

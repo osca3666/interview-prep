@@ -1,15 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AddProblemForm } from "@/components/add-problem-form";
 import { type LeetCodeProblemSearchOption } from "@/lib/leetcode-catalog-types";
 
 type AddProblemDialogProps = {
   problemOptions: LeetCodeProblemSearchOption[];
+  returnTo?: "/dashboard" | "/problems";
+  initialFrontendId?: string | null;
+  open?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+  triggerLabel?: string;
+  triggerClassName?: string;
+  showTrigger?: boolean;
 };
 
-export function AddProblemDialog({ problemOptions }: AddProblemDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function AddProblemDialog({
+  problemOptions,
+  returnTo = "/dashboard",
+  initialFrontendId,
+  open,
+  onOpenChange,
+  triggerLabel = "+ Track Problem",
+  triggerClassName = "inline-flex h-11 w-full items-center justify-center rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 sm:w-auto dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white",
+  showTrigger = true,
+}: AddProblemDialogProps) {
+  const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(false);
+  const isOpen = open ?? uncontrolledIsOpen;
+
+  const setIsOpen = useCallback((nextIsOpen: boolean) => {
+    onOpenChange?.(nextIsOpen);
+
+    if (open === undefined) {
+      setUncontrolledIsOpen(nextIsOpen);
+    }
+  }, [onOpenChange, open]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -24,17 +49,19 @@ export function AddProblemDialog({ problemOptions }: AddProblemDialogProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, setIsOpen]);
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="inline-flex h-11 w-full items-center justify-center rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 sm:w-auto dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
-      >
-        + Add Problem
-      </button>
+      {showTrigger ? (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className={triggerClassName}
+        >
+          {triggerLabel}
+        </button>
+      ) : null}
 
       {isOpen ? (
         <div
@@ -54,21 +81,23 @@ export function AddProblemDialog({ problemOptions }: AddProblemDialogProps) {
                 id="add-problem-dialog-title"
                 className="text-base font-semibold text-zinc-950 dark:text-zinc-100"
               >
-                Add problem
+                Track a problem
               </h2>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 text-xl leading-none text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                aria-label="Close add problem dialog"
+                aria-label="Close Track Problem dialog"
               >
                 X
               </button>
             </div>
             <AddProblemForm
-              returnTo="/dashboard"
+              key={initialFrontendId ?? "blank"}
+              returnTo={returnTo}
               problemOptions={problemOptions}
               variant="modal"
+              initialFrontendId={initialFrontendId}
             />
           </div>
         </div>

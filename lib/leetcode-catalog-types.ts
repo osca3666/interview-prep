@@ -14,3 +14,14 @@ export type LeetCodeProblemSearchOption = Pick<
   LeetCodeCatalogProblem,
   "frontendId" | "title" | "difficulty" | "paidOnly"
 >;
+
+export type LeetCodeProblemLibraryOption = Pick<
+  LeetCodeCatalogProblem,
+  | "frontendId"
+  | "slug"
+  | "title"
+  | "difficulty"
+  | "paidOnly"
+  | "topics"
+  | "leetcodeUrl"
+>;
