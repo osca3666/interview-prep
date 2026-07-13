@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LeetCodeHistoryImportPreview } from "@/components/leetcode-history-import-preview";
+import { getLeetCodeProblemLibraryOptions } from "@/lib/leetcode-catalog";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function ProblemImportPage() {
@@ -14,7 +15,7 @@ export default async function ProblemImportPage() {
 
   const existingProblemsResult = await supabase
     .from("user_problems")
-    .select("id,leetcode_slug,title,difficulty")
+    .select("id,leetcode_frontend_id,leetcode_slug,title,difficulty")
     .eq("user_id", userId);
 
   if (existingProblemsResult.error) {
@@ -48,6 +49,7 @@ export default async function ProblemImportPage() {
 
         <div className="mt-8">
           <LeetCodeHistoryImportPreview
+            catalogProblems={getLeetCodeProblemLibraryOptions()}
             existingProblems={existingProblemsResult.data ?? []}
           />
         </div>

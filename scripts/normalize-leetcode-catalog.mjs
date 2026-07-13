@@ -75,6 +75,7 @@ function normalizeQuestion(row, sourceIndex, errors) {
   const title = asString(row.title);
   const slug = deriveSlugFromUrl(row.url);
   const difficulty = asString(row.difficulty).toLowerCase();
+  const category = asString(row.categoryTitle);
 
   if (!frontendId) {
     errors.push(`Row ${sourceIndex + 1}: missing questionFrontendId`);
@@ -98,7 +99,17 @@ function normalizeQuestion(row, sourceIndex, errors) {
     );
   }
 
-  if (!frontendId || !title || !slug || !validDifficulties.has(difficulty)) {
+  if (!category) {
+    errors.push(`Row ${sourceIndex + 1}: missing categoryTitle`);
+  }
+
+  if (
+    !frontendId ||
+    !title ||
+    !slug ||
+    !validDifficulties.has(difficulty) ||
+    !category
+  ) {
     return null;
   }
 
@@ -115,6 +126,7 @@ function normalizeQuestion(row, sourceIndex, errors) {
           .filter((tagName) => tagName.length > 0)
       : [],
     leetcodeUrl: `https://leetcode.com/problems/${slug}/`,
+    category,
   };
 }
 
@@ -126,11 +138,8 @@ async function main() {
     throw new Error(`Expected ${inputPath} to contain a JSON array.`);
   }
 
-  const algorithmRows = sourceRows.filter(
-    (row) => row?.categoryTitle === "Algorithms",
-  );
   const errors = [];
-  const normalizedItems = algorithmRows
+  const normalizedItems = sourceRows
     .map((row, index) => normalizeQuestion(row, index, errors))
     .filter(Boolean);
 
@@ -161,6 +170,7 @@ async function main() {
     paidOnly: item.paidOnly,
     topics: item.topics,
     leetcodeUrl: item.leetcodeUrl,
+    category: item.category,
   }));
   const difficultyCounts = outputItems.reduce(
     (counts, item) => {
@@ -169,6 +179,10 @@ async function main() {
     },
     { easy: 0, medium: 0, hard: 0 },
   );
+  const categoryCounts = outputItems.reduce((counts, item) => {
+    counts.set(item.category, (counts.get(item.category) ?? 0) + 1);
+    return counts;
+  }, new Map());
   const paidCount = outputItems.filter((item) => item.paidOnly).length;
   const freeCount = outputItems.length - paidCount;
 
@@ -177,13 +191,21 @@ async function main() {
 
   console.log("LeetCode catalog normalized.");
   console.log(`Source rows: ${sourceRows.length}`);
-  console.log(`Algorithms rows: ${algorithmRows.length}`);
   console.log(`Output rows: ${outputItems.length}`);
+  console.log(`Invalid/skipped rows: ${sourceRows.length - outputItems.length}`);
+  console.log(`Duplicate frontend IDs: 0`);
+  console.log(`Duplicate slugs: 0`);
   console.log(`Free problems: ${freeCount}`);
   console.log(`Paid problems: ${paidCount}`);
   console.log(`Easy: ${difficultyCounts.easy}`);
   console.log(`Medium: ${difficultyCounts.medium}`);
   console.log(`Hard: ${difficultyCounts.hard}`);
+  console.log("Categories:");
+  Array.from(categoryCounts.entries())
+    .sort((first, second) => second[1] - first[1])
+    .forEach(([category, count]) => {
+      console.log(`  ${category}: ${count}`);
+    });
   console.log(`Wrote ${outputPath}`);
 }
 

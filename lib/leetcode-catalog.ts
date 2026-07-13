@@ -35,7 +35,7 @@ export function getLeetCodeProblemSearchOptions(): LeetCodeProblemSearchOption[]
 
 export function getLeetCodeProblemLibraryOptions(): LeetCodeProblemLibraryOption[] {
   return catalogProblems.map(
-    ({ frontendId, slug, title, difficulty, paidOnly, topics, leetcodeUrl }) => ({
+    ({
       frontendId,
       slug,
       title,
@@ -43,6 +43,16 @@ export function getLeetCodeProblemLibraryOptions(): LeetCodeProblemLibraryOption
       paidOnly,
       topics,
       leetcodeUrl,
+      category,
+    }) => ({
+      frontendId,
+      slug,
+      title,
+      difficulty,
+      paidOnly,
+      topics,
+      leetcodeUrl,
+      category,
     }),
   );
 }

@@ -139,6 +139,7 @@ export function ProblemLibraryView({
         problem.frontendId,
         problem.title,
         problem.difficulty,
+        problem.category,
         ...problem.topics,
       ]
         .join(" ")

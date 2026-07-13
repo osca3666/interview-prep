@@ -70,6 +70,7 @@ React form/UI -> Next.js Server Action -> typed data wrapper -> Supabase RPC -> 
 - The roadmap action submits only the roadmap slug, return path, and browser timezone from the client.
 - Trusted title, slug, difficulty, topics, and LeetCode URL are looked up server-side from canonical metadata.
 - Starting a roadmap problem creates a scheduled `user_problems` row through the existing `create_user_problem_with_timezone` RPC and does not create a review event.
+- Roadmap content remains controlled by static roadmap lists and is not expanded by non-Algorithms catalog categories.
 
 ## Completed LeetCode Import Preview Features
 
@@ -79,15 +80,17 @@ Current read-only import pipeline:
 2. User copies the full page text.
 3. User pastes it into `/problems/import`.
 4. `parseLeetCodePracticeHistory` in `lib/leetcode-history-import.ts` extracts valid rows.
-5. `components/leetcode-history-import-preview.tsx` separates Ready to import, Already in Library, duplicate accepted rows, and skipped non-accepted attempts.
-6. Nothing is persisted yet.
+5. `lib/leetcode-history-import-matching.ts` matches accepted rows to the all-category canonical LeetCode catalog by frontend ID.
+6. `components/leetcode-history-import-preview.tsx` separates Ready as practiced, Ready to schedule, Already in Library, Unmatched, and duplicate rows.
+7. Nothing is persisted yet.
 
 Implemented parser behavior:
 
 - Detects problem lines using frontend problem number and title.
-- Imports only rows with exact `Accepted` result.
-- Skips non-accepted attempts.
-- Deduplicates accepted rows by `frontendId`.
+- Classifies rows with any `Accepted` result as practiced.
+- Classifies rows with only non-accepted attempts as scheduled.
+- Deduplicates valid history rows by `frontendId`.
+- Lets Accepted rows win when the same problem has accepted and non-accepted rows.
 - Keeps the most recent valid accepted row when duplicate accepted rows have normalized dates.
 - Normalizes difficulty to `easy`, `medium`, or `hard`.
 - Derives a best-effort LeetCode slug and LeetCode URL from the title.
@@ -100,7 +103,10 @@ Implemented parser behavior:
   - month/day
   - `YYYY.MM.DD`
 - Invalid dates are clearly labeled in the preview and do not block preview.
-- Existing Library matching currently compares the derived slug against `user_problems.leetcode_slug`.
+- Canonically matched rows display catalog title, slug, difficulty, LeetCode URL, topics, and category while preserving parsed history fields such as accepted date and submission count.
+- Import matching uses the expanded catalog across all LeetCode categories.
+- Existing Library matching uses `user_problems.leetcode_frontend_id` first, with `user_problems.leetcode_slug` as a legacy fallback.
+- Rows that are not found in the current canonical catalog are shown as Unmatched and keep their practiced/scheduled intent.
 
 The import flow is preview-only. There is no Confirm import behavior, import Server Action, import RPC, or database write yet.
 
@@ -116,7 +122,9 @@ The import flow is preview-only. There is no Confirm import behavior, import Ser
 - A giant fixed future queue should not be pre-generated.
 - Store durable problem/review state and compute today's plan dynamically.
 - Review limits determine how many eligible problems surface today; they should not require rewriting every existing review date.
-- The V1 canonical LeetCode catalog should be static application data.
+- The V1 canonical LeetCode catalog is static application data and includes all source categories.
+- Generated catalog records include category, but category is not persisted in `user_problems`.
+- Track Problem and the All LeetCode Library view use the expanded canonical catalog.
 - No paid API, cookie sharing, user script, or LeetCode password flow for V1.
 - Users should eventually select canonical LeetCode problems rather than create arbitrary free-text problem identities.
 
@@ -129,40 +137,37 @@ Completed:
 - parser
 - accepted-date normalization
 - preview UI
-- Library matching
-- duplicate/skipped categorization
+- expanded all-category canonical catalog
+- canonical frontend ID matching
+- canonical metadata replacement
+- Library matching by frontend ID with slug fallback
+- unmatched-catalog classification
+- practiced vs scheduled preview categorization
+- duplicate-row categorization
 - invalid-date labeling
 
 Not completed:
 
-- canonical static LeetCode catalog
-- frontendId-based canonical matching
-- unmatched-catalog classification
 - dedicated bulk-import RPC/write path
 - imported calibration scheduling
 - Confirm import button
-- Add Problem autocomplete from the catalog
 
 ## Recommended Next Slice
 
-The next recommended slice is canonical static LeetCode problem catalog design and foundation.
+The next recommended slice is the dedicated bulk import persistence design.
 
 Why:
 
-- Current import matching relies on best-effort title-derived slugs.
-- Before inserting hundreds of problems, imports should resolve `frontendId` to canonical title, slug, difficulty, and URL.
-- The same catalog can later power Add Problem autocomplete.
+- Preview now resolves accepted rows to canonical catalog records.
+- The next decision is how imported external history becomes durable `user_problems` state without creating fake in-app review events.
+- Imported scheduling should use accepted dates for initial calibration.
 
 Recommended incremental sequence:
 
-1. Define catalog type and static data format.
-2. Add lookup helpers by `frontendId` and slug.
-3. Add or generate the full static catalog.
-4. Update import preview to use `frontendId`-based catalog matching.
-5. Add an Unmatched catalog section.
-6. Design the dedicated bulk-import RPC.
-7. Enable Confirm import.
-8. Add Add Problem autocomplete later.
+1. Design the dedicated bulk-import RPC and Server Action.
+2. Define imported calibration scheduling from accepted dates.
+3. Decide how unmatched rows are excluded or reported during confirm.
+4. Enable Confirm import.
 
 ## Deferred Features
 

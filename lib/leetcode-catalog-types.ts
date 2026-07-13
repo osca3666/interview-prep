@@ -8,6 +8,7 @@ export type LeetCodeCatalogProblem = {
   paidOnly: boolean;
   topics: string[];
   leetcodeUrl: string;
+  category: string;
 };
 
 export type LeetCodeProblemSearchOption = Pick<
@@ -24,4 +25,5 @@ export type LeetCodeProblemLibraryOption = Pick<
   | "paidOnly"
   | "topics"
   | "leetcodeUrl"
+  | "category"
 >;

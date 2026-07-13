@@ -4,6 +4,8 @@ export type LeetCodeHistoryImportProblem = {
   frontendId: number;
   title: string;
   difficulty: LeetCodeHistoryDifficulty;
+  importKind: "practiced" | "scheduled";
+  result: string;
   dateText?: string;
   acceptedDate: string | null;
   submissionCount: number;
@@ -15,18 +17,20 @@ export type LeetCodeHistorySkippedRow = {
   frontendId: number;
   title: string;
   result: string;
-  reason: "not_accepted" | "duplicate_accepted";
+  reason: "duplicate_row";
 };
 
 export type LeetCodeHistoryParseStats = {
   totalCandidates: number;
-  acceptedCount: number;
-  skippedNonAcceptedCount: number;
+  problemCount: number;
+  practicedCount: number;
+  scheduledCount: number;
   duplicateCount: number;
   invalidCandidateCount: number;
 };
 
 export type LeetCodeHistoryParseResult = {
+  importProblems: LeetCodeHistoryImportProblem[];
   acceptedProblems: LeetCodeHistoryImportProblem[];
   skippedRows: LeetCodeHistorySkippedRow[];
   stats: LeetCodeHistoryParseStats;
@@ -74,6 +78,8 @@ const monthIndexes = new Map([
   ["nov", 10],
   ["dec", 11],
 ]);
+const relativeSameDayDatePattern =
+  /^(?:just now|a few seconds ago|a minute ago|1 minute ago|(?:[2-9]|[1-9]\d+) minutes ago|an hour ago|1 hour ago|(?:[2-9]|[1-9]\d+) hours ago)$/i;
 const submissionResults = new Set([
   "Accepted",
   "Wrong Answer",
@@ -178,6 +184,10 @@ function formatLocalDateOnly(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+function isRelativeSameDayDateText(dateText: string) {
+  return relativeSameDayDatePattern.test(dateText.trim());
+}
+
 function isRealLocalDate(year: number, monthIndex: number, day: number) {
   const date = createLocalNoonDate(year, monthIndex, day);
 
@@ -198,6 +208,10 @@ function parseAcceptedDate(dateText: string | undefined, referenceDate: Date) {
   const lowerDateText = normalizedDateText.toLowerCase();
 
   if (lowerDateText === "today") {
+    return formatLocalDateOnly(normalizedReferenceDate);
+  }
+
+  if (isRelativeSameDayDateText(normalizedDateText)) {
     return formatLocalDateOnly(normalizedReferenceDate);
   }
 
@@ -333,6 +347,9 @@ function toImportProblem(
     frontendId: candidate.frontendId,
     title: candidate.title,
     difficulty: candidate.difficulty,
+    importKind:
+      candidate.result === acceptedResult ? "practiced" : "scheduled",
+    result: candidate.result,
     dateText: candidate.dateText,
     acceptedDate: candidate.acceptedDate,
     submissionCount: candidate.submissionCount,
@@ -356,13 +373,28 @@ function shouldReplaceAcceptedProblem(
   return candidate.acceptedDate > currentProblem.acceptedDate;
 }
 
+function shouldReplaceScheduledProblem(
+  currentProblem: LeetCodeHistoryImportProblem,
+  candidate: ParsedCandidate,
+) {
+  if (candidate.acceptedDate && !currentProblem.acceptedDate) {
+    return true;
+  }
+
+  if (!candidate.acceptedDate || !currentProblem.acceptedDate) {
+    return false;
+  }
+
+  return candidate.acceptedDate > currentProblem.acceptedDate;
+}
+
 export function parseLeetCodePracticeHistory(
   rawText: string,
   options: LeetCodePracticeHistoryParseOptions = {},
 ): LeetCodeHistoryParseResult {
   const lines = normalizeLines(rawText);
   const referenceDate = options.referenceDate ?? new Date();
-  const acceptedByFrontendId = new Map<number, LeetCodeHistoryImportProblem>();
+  const problemsByFrontendId = new Map<number, LeetCodeHistoryImportProblem>();
   const skippedRows: LeetCodeHistorySkippedRow[] = [];
   let totalCandidates = 0;
   let invalidCandidateCount = 0;
@@ -384,31 +416,46 @@ export function parseLeetCodePracticeHistory(
       return;
     }
 
-    if (candidate.result !== acceptedResult) {
-      skippedRows.push({
-        frontendId: candidate.frontendId,
-        title: candidate.title,
-        result: candidate.result,
-        reason: "not_accepted",
-      });
-      return;
-    }
+    const currentProblem = problemsByFrontendId.get(candidate.frontendId);
 
-    const currentAcceptedProblem = acceptedByFrontendId.get(
-      candidate.frontendId,
-    );
-
-    if (currentAcceptedProblem) {
+    if (currentProblem) {
       duplicateCount += 1;
       skippedRows.push({
         frontendId: candidate.frontendId,
         title: candidate.title,
         result: candidate.result,
-        reason: "duplicate_accepted",
+        reason: "duplicate_row",
       });
 
-      if (shouldReplaceAcceptedProblem(currentAcceptedProblem, candidate)) {
-        acceptedByFrontendId.set(
+      if (
+        candidate.result === acceptedResult &&
+        currentProblem.importKind === "scheduled"
+      ) {
+        problemsByFrontendId.set(
+          candidate.frontendId,
+          toImportProblem(candidate),
+        );
+        return;
+      }
+
+      if (
+        candidate.result === acceptedResult &&
+        currentProblem.importKind === "practiced" &&
+        shouldReplaceAcceptedProblem(currentProblem, candidate)
+      ) {
+        problemsByFrontendId.set(
+          candidate.frontendId,
+          toImportProblem(candidate),
+        );
+        return;
+      }
+
+      if (
+        candidate.result !== acceptedResult &&
+        currentProblem.importKind === "scheduled" &&
+        shouldReplaceScheduledProblem(currentProblem, candidate)
+      ) {
+        problemsByFrontendId.set(
           candidate.frontendId,
           toImportProblem(candidate),
         );
@@ -417,20 +464,26 @@ export function parseLeetCodePracticeHistory(
       return;
     }
 
-    acceptedByFrontendId.set(candidate.frontendId, toImportProblem(candidate));
+    problemsByFrontendId.set(candidate.frontendId, toImportProblem(candidate));
   });
 
-  const acceptedProblems = Array.from(acceptedByFrontendId.values());
+  const importProblems = Array.from(problemsByFrontendId.values());
+  const acceptedProblems = importProblems.filter(
+    (problem) => problem.importKind === "practiced",
+  );
+  const scheduledProblems = importProblems.filter(
+    (problem) => problem.importKind === "scheduled",
+  );
 
   return {
+    importProblems,
     acceptedProblems,
     skippedRows,
     stats: {
       totalCandidates,
-      acceptedCount: acceptedProblems.length,
-      skippedNonAcceptedCount: skippedRows.filter(
-        (row) => row.reason === "not_accepted",
-      ).length,
+      problemCount: importProblems.length,
+      practicedCount: acceptedProblems.length,
+      scheduledCount: scheduledProblems.length,
       duplicateCount,
       invalidCandidateCount,
     },
