@@ -7,13 +7,13 @@ export type LeetCodeHistoryImportProblem = {
   importKind: "practiced" | "scheduled";
   result: string;
   dateText?: string;
-  acceptedDate: string | null;
+  historyDate: string | null;
   submissionCount: number;
   slug: string;
   leetcodeUrl: string;
 };
 
-export type LeetCodeHistorySkippedRow = {
+export type LeetCodeHistoryDuplicateRow = {
   frontendId: number;
   title: string;
   result: string;
@@ -31,8 +31,8 @@ export type LeetCodeHistoryParseStats = {
 
 export type LeetCodeHistoryParseResult = {
   importProblems: LeetCodeHistoryImportProblem[];
-  acceptedProblems: LeetCodeHistoryImportProblem[];
-  skippedRows: LeetCodeHistorySkippedRow[];
+  practicedProblems: LeetCodeHistoryImportProblem[];
+  duplicateRows: LeetCodeHistoryDuplicateRow[];
   stats: LeetCodeHistoryParseStats;
 };
 
@@ -50,7 +50,7 @@ type ParsedCandidate = ParsedProblemLine & {
   result: string;
   submissionCount: number;
   dateText?: string;
-  acceptedDate: string | null;
+  historyDate: string | null;
 };
 
 const problemLinePattern = /^(\d+)\.\s+(.+)$/;
@@ -198,7 +198,7 @@ function isRealLocalDate(year: number, monthIndex: number, day: number) {
   );
 }
 
-function parseAcceptedDate(dateText: string | undefined, referenceDate: Date) {
+function parseHistoryDate(dateText: string | undefined, referenceDate: Date) {
   if (!dateText) {
     return null;
   }
@@ -249,23 +249,23 @@ function parseAcceptedDate(dateText: string | undefined, referenceDate: Date) {
       return null;
     }
 
-    let acceptedDate = formatLocalDateOnly(
+    let historyDate = formatLocalDateOnly(
       createLocalNoonDate(year, monthIndex, day),
     );
 
-    if (acceptedDate > formatLocalDateOnly(normalizedReferenceDate)) {
+    if (historyDate > formatLocalDateOnly(normalizedReferenceDate)) {
       year -= 1;
 
       if (!isRealLocalDate(year, monthIndex, day)) {
         return null;
       }
 
-      acceptedDate = formatLocalDateOnly(
+      historyDate = formatLocalDateOnly(
         createLocalNoonDate(year, monthIndex, day),
       );
     }
 
-    return acceptedDate;
+    return historyDate;
   }
 
   const historicDateMatch = normalizedDateText.match(
@@ -334,7 +334,7 @@ function parseCandidateAt(
     result,
     submissionCount,
     dateText,
-    acceptedDate: parseAcceptedDate(dateText, referenceDate),
+    historyDate: parseHistoryDate(dateText, referenceDate),
   };
 }
 
@@ -351,41 +351,41 @@ function toImportProblem(
       candidate.result === acceptedResult ? "practiced" : "scheduled",
     result: candidate.result,
     dateText: candidate.dateText,
-    acceptedDate: candidate.acceptedDate,
+    historyDate: candidate.historyDate,
     submissionCount: candidate.submissionCount,
     slug,
     leetcodeUrl: `https://leetcode.com/problems/${slug}/`,
   };
 }
 
-function shouldReplaceAcceptedProblem(
+function shouldReplacePracticedProblem(
   currentProblem: LeetCodeHistoryImportProblem,
   candidate: ParsedCandidate,
 ) {
-  if (candidate.acceptedDate && !currentProblem.acceptedDate) {
+  if (candidate.historyDate && !currentProblem.historyDate) {
     return true;
   }
 
-  if (!candidate.acceptedDate || !currentProblem.acceptedDate) {
+  if (!candidate.historyDate || !currentProblem.historyDate) {
     return false;
   }
 
-  return candidate.acceptedDate > currentProblem.acceptedDate;
+  return candidate.historyDate > currentProblem.historyDate;
 }
 
 function shouldReplaceScheduledProblem(
   currentProblem: LeetCodeHistoryImportProblem,
   candidate: ParsedCandidate,
 ) {
-  if (candidate.acceptedDate && !currentProblem.acceptedDate) {
+  if (candidate.historyDate && !currentProblem.historyDate) {
     return true;
   }
 
-  if (!candidate.acceptedDate || !currentProblem.acceptedDate) {
+  if (!candidate.historyDate || !currentProblem.historyDate) {
     return false;
   }
 
-  return candidate.acceptedDate > currentProblem.acceptedDate;
+  return candidate.historyDate > currentProblem.historyDate;
 }
 
 export function parseLeetCodePracticeHistory(
@@ -395,7 +395,7 @@ export function parseLeetCodePracticeHistory(
   const lines = normalizeLines(rawText);
   const referenceDate = options.referenceDate ?? new Date();
   const problemsByFrontendId = new Map<number, LeetCodeHistoryImportProblem>();
-  const skippedRows: LeetCodeHistorySkippedRow[] = [];
+  const duplicateRows: LeetCodeHistoryDuplicateRow[] = [];
   let totalCandidates = 0;
   let invalidCandidateCount = 0;
   let duplicateCount = 0;
@@ -420,7 +420,7 @@ export function parseLeetCodePracticeHistory(
 
     if (currentProblem) {
       duplicateCount += 1;
-      skippedRows.push({
+      duplicateRows.push({
         frontendId: candidate.frontendId,
         title: candidate.title,
         result: candidate.result,
@@ -441,7 +441,7 @@ export function parseLeetCodePracticeHistory(
       if (
         candidate.result === acceptedResult &&
         currentProblem.importKind === "practiced" &&
-        shouldReplaceAcceptedProblem(currentProblem, candidate)
+        shouldReplacePracticedProblem(currentProblem, candidate)
       ) {
         problemsByFrontendId.set(
           candidate.frontendId,
@@ -468,7 +468,7 @@ export function parseLeetCodePracticeHistory(
   });
 
   const importProblems = Array.from(problemsByFrontendId.values());
-  const acceptedProblems = importProblems.filter(
+  const practicedProblems = importProblems.filter(
     (problem) => problem.importKind === "practiced",
   );
   const scheduledProblems = importProblems.filter(
@@ -477,12 +477,12 @@ export function parseLeetCodePracticeHistory(
 
   return {
     importProblems,
-    acceptedProblems,
-    skippedRows,
+    practicedProblems,
+    duplicateRows,
     stats: {
       totalCandidates,
       problemCount: importProblems.length,
-      practicedCount: acceptedProblems.length,
+      practicedCount: practicedProblems.length,
       scheduledCount: scheduledProblems.length,
       duplicateCount,
       invalidCandidateCount,

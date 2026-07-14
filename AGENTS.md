@@ -25,7 +25,7 @@ The core user experience is:
 2. Choose a built-in roadmap and study goal.
 3. Open the dashboard and know what to study today.
 4. Review previously solved problems with spaced repetition.
-5. See roadmap-specific progress, mastery, and pattern coverage.
+5. See roadmap-specific progress, mastery, and topic/category coverage.
 
 ## Current Route Responsibilities
 
@@ -56,7 +56,7 @@ The core user experience is:
 - Skip today must not change mastery, review count, review stage, or review history.
 - Imported LeetCode history is external solved history, not an in-app review.
 - Bulk import should not pretend imported rows are review events.
-- Use accepted date, not submission count, as the primary signal for initial import review priority.
+- Use normalized history date, not submission count, as the primary signal for initial import review priority.
 - Built-in roadmaps are the V1 direction.
 - Custom and shared roadmaps are later features.
 - The V1 LeetCode catalog should be static application data rather than a database table or paid API dependency.

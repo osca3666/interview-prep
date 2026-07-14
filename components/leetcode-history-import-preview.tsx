@@ -36,7 +36,7 @@ type StatCardProps = {
 };
 
 type ImportDateCellProps = {
-  acceptedDate: string | null;
+  historyDate: string | null;
   dateText?: string;
 };
 
@@ -59,11 +59,11 @@ function StatCard({ label, value }: StatCardProps) {
   );
 }
 
-function ImportDateCell({ acceptedDate, dateText }: ImportDateCellProps) {
-  if (acceptedDate) {
+function ImportDateCell({ historyDate, dateText }: ImportDateCellProps) {
+  if (historyDate) {
     return (
       <div className="truncate" title={dateText ?? undefined}>
-        {acceptedDate}
+        {historyDate}
       </div>
     );
   }
@@ -162,7 +162,7 @@ function PreviewProblemTable({
             </div>
             <div className="min-w-0 px-3 py-3 text-sm text-zinc-600 dark:text-zinc-400">
               <ImportDateCell
-                acceptedDate={problem.acceptedDate}
+                historyDate={problem.historyDate}
                 dateText={problem.dateText}
               />
             </div>
@@ -185,7 +185,7 @@ export function LeetCodeHistoryImportPreview({
   const [result, setResult] = useState<LeetCodeHistoryParseResult | null>(
     getEmptyResult,
   );
-  const duplicateRows = result?.skippedRows ?? [];
+  const duplicateRows = result?.duplicateRows ?? [];
   const stats = result?.stats;
   const hasPreview = result !== null;
   const classification = useMemo(
@@ -400,7 +400,7 @@ export function LeetCodeHistoryImportPreview({
                         <span>last result: {problem.result}</span>
                         <span className="min-w-0">
                           <ImportDateCell
-                            acceptedDate={problem.acceptedDate}
+                            historyDate={problem.historyDate}
                             dateText={problem.dateText}
                           />
                         </span>

@@ -23,7 +23,7 @@ export type CanonicalImportPreviewProblem = {
   result: string;
   submissionCount: number;
   dateText?: string;
-  acceptedDate: string | null;
+  historyDate: string | null;
 };
 
 export type ReadyToImportPreviewRow = {
@@ -43,7 +43,7 @@ export type UnmatchedImportPreviewRow = {
   result: string;
   submissionCount: number;
   dateText?: string;
-  acceptedDate: string | null;
+  historyDate: string | null;
   reason: "catalog_problem_not_found";
 };
 
@@ -79,7 +79,7 @@ function toCanonicalPreviewProblem(
     result: parsedProblem.result,
     submissionCount: parsedProblem.submissionCount,
     dateText: parsedProblem.dateText,
-    acceptedDate: parsedProblem.acceptedDate,
+    historyDate: parsedProblem.historyDate,
   };
 }
 
@@ -121,7 +121,7 @@ export function classifyLeetCodeHistoryImport({
           result: parsedProblem.result,
           submissionCount: parsedProblem.submissionCount,
           dateText: parsedProblem.dateText,
-          acceptedDate: parsedProblem.acceptedDate,
+          historyDate: parsedProblem.historyDate,
           reason: "catalog_problem_not_found",
         });
         return classification;

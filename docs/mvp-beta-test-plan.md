@@ -12,12 +12,12 @@ Estimated tester time: 10-15 minutes.
 
 - Supports email/password sign up and sign in.
 - Shows `/dashboard` as the main review workspace.
-- Lets users add LeetCode problems from the dashboard `+ Add Problem` modal.
-- Lets users add LeetCode problems inline from `/problems`, the Library page.
+- Lets users track LeetCode problems from the dashboard `Track Problem` modal.
+- Lets users track LeetCode problems from `/problems`, the Library page.
 - Lets users preview pasted LeetCode Practice History text from `/problems/import`.
 - Shows a NeetCode 150 roadmap checklist/planning page at `/roadmaps/neetcode-150`.
 - Lets users start one untracked roadmap problem for today from the roadmap page.
-- Supports two Add Problem starting states:
+- Supports two Track Problem starting states:
   - `I practiced this problem`: counts as the first review/practice event.
   - `I have not practiced it yet`: schedules the first review without counting practice.
 - Tracks due problems in the `Ready to review` section.
@@ -26,8 +26,9 @@ Estimated tester time: 10-15 minutes.
   - `OK`: normal progress, backend value `"good"`.
   - `Great`: faster progress, backend value `"easy"`.
 - Lets users use `Skip today` on a due problem without counting it as a review.
-- Shows progress in a shared Progress table with problem title, difficulty, mastery, last reviewed, next review, and review count.
+- Shows a compact recent-problems preview on the dashboard.
 - Shows tracked problems in the Library page using the shared Progress table.
+- Shows the all-category LeetCode catalog in the Library page.
 - Supports dark/light theme switching.
 - Shows toast feedback for success and common errors.
 
@@ -59,9 +60,9 @@ Use this script for each first-pass beta test session.
 
 Expected result: auth works, the dashboard loads, and the nav shows signed-in controls.
 
-### 2. Add A Practiced Problem From Dashboard
+### 2. Track A Practiced Problem From Dashboard
 
-1. On `/dashboard`, click `+ Add Problem`.
+1. On `/dashboard`, click `Track Problem`.
 2. Select a LeetCode problem.
 3. Enter optional notes.
 4. Choose `I practiced this problem`.
@@ -71,9 +72,9 @@ Expected result: auth works, the dashboard loads, and the nav shows signed-in co
 
 Expected result: modal submission succeeds, a toast appears, and the problem appears in Progress.
 
-### 3. Add A Scheduled Problem From Dashboard
+### 3. Track A Scheduled Problem From Dashboard
 
-1. Click `+ Add Problem` again.
+1. Click `Track Problem` again.
 2. Add a different valid LeetCode problem.
 3. Choose `I have not practiced it yet`.
 4. Keep first review date as today or choose a future date.
@@ -98,11 +99,13 @@ Expected result: review saves, the due queue updates, and Progress updates the r
 
 1. Open `/problems` from the nav.
 2. Confirm the page is titled `Problem library`.
-3. Add a problem using the inline form.
+3. Track a problem using the page-level `Track Problem` modal.
 4. Confirm the tracked problems table updates.
-5. Use the Progress table search to find a problem by title, problem number, difficulty, or topic.
+5. Use the Tracked table search to find a problem by title, problem number, difficulty, or topic.
+6. Switch to `All LeetCode`.
+7. Search the catalog by problem number, title, difficulty, topic, or category.
 
-Expected result: Library works as a supporting tracked-problem browser and inline add page.
+Expected result: Library works as a supporting tracked-problem browser and catalog view.
 
 ### 6. Preview LeetCode Practice History Import
 
@@ -110,7 +113,7 @@ Expected result: Library works as a supporting tracked-problem browser and inlin
 2. Open the linked LeetCode Practice History page.
 3. Paste copied Practice History text into the textarea.
 4. Click `Preview import`.
-5. Review the accepted problems, already-in-library problems, ready-to-import problems, skipped attempts, and duplicates removed.
+5. Review the Ready to import as practiced, Ready to schedule, Already in Library, Unmatched, and Duplicate rows removed sections.
 6. Confirm the import/confirm button is disabled or clearly marked as coming next.
 
 Expected result: the page previews parsed history and Library matches without saving anything to the database.
@@ -150,25 +153,22 @@ Expected result: the app remains readable and usable in both themes.
 - [ ] `/dashboard` loads without errors.
 - [ ] `Ready to review` shows due/overdue problems only.
 - [ ] Empty ready state says the user is caught up.
-- [ ] `+ Add Problem` opens a modal.
+- [ ] `Track Problem` opens a modal.
 - [ ] Modal closes with the close button.
 - [ ] Modal closes with backdrop click.
 - [ ] Modal closes with Escape.
-- [ ] Progress table search filters by title.
-- [ ] Progress table search filters by difficulty.
-- [ ] Progress table search filters by problem number.
-- [ ] Progress table search filters by LeetCode topic.
-- [ ] Progress table header stays visible while rows scroll.
+- [ ] Recent problems preview shows at most five rows.
+- [ ] `View all problems` links to `/problems`.
 
-### Add Problem
+### Track Problem
 
 - [ ] Practiced mode defaults to today and `OK`.
 - [ ] Practiced mode rejects future practice dates.
 - [ ] Scheduled mode defaults to today.
 - [ ] Scheduled mode handles today and future review dates correctly.
 - [ ] Duplicate problem shows the existing duplicate error.
-- [ ] Add from dashboard returns to `/dashboard`.
-- [ ] Add from Library returns to `/problems`.
+- [ ] Track from dashboard returns to `/dashboard`.
+- [ ] Track from Library returns to `/problems`.
 
 ### Review Flow
 
@@ -181,14 +181,16 @@ Expected result: the app remains readable and usable in both themes.
 - [ ] `Skip today` does not change mastery.
 - [ ] Review success shows a toast.
 - [ ] Stale or invalid review states show a safe error.
-- [ ] Review cards do not show difficulty, pattern, notes, or hints.
+- [ ] Review cards do not show pattern, topics, notes, mastery, or review count.
 
 ### Library
 
 - [ ] `/problems` loads as `Problem library`.
-- [ ] Inline Add Problem form works.
+- [ ] Track Problem modal works.
 - [ ] Tracked problems display in the shared Progress table.
 - [ ] Search works in the Library Progress table.
+- [ ] All LeetCode catalog search works by number, title, difficulty, topic, or category.
+- [ ] Catalog row Track action opens the Track Problem modal with the selected problem.
 - [ ] Empty state is clear for a new user.
 
 ### Import Preview
@@ -196,10 +198,10 @@ Expected result: the app remains readable and usable in both themes.
 - [ ] `/problems/import` is protected for signed-in users.
 - [ ] The LeetCode Practice History link opens `https://leetcode.com/progress/`.
 - [ ] Pasted full-page LeetCode text can be previewed.
-- [ ] Accepted rows appear in preview results.
-- [ ] Non-accepted attempts appear in the skipped section.
-- [ ] Duplicates are counted separately from skipped attempts.
-- [ ] Already-in-Library problems are separated from Ready-to-import problems.
+- [ ] Accepted rows appear under Ready to import as practiced.
+- [ ] Non-accepted-only rows appear under Ready to schedule.
+- [ ] Duplicate rows are counted separately.
+- [ ] Already-in-Library problems are separated from Ready to import and Ready to schedule.
 - [ ] Invalid dates are visibly flagged but do not block preview.
 - [ ] No database write happens from preview.
 - [ ] Confirm import remains disabled or coming soon.
@@ -238,7 +240,7 @@ Expected result: the app remains readable and usable in both themes.
 3. Was the difference between `I practiced this problem` and `I have not practiced it yet` clear?
 4. Did `Redo`, `OK`, and `Great` match how you think about review outcomes?
 5. Did the Ready to review list feel focused, or did you want more context?
-6. Did the Progress table help you understand what is happening over time?
+6. Did the Library progress table help you understand what is happening over time?
 7. Was anything confusing about dates, due status, or next review timing?
 8. Did you expect to edit, archive, delete, snooze, or skip anything?
 9. Did the LeetCode history import preview make sense before saving anything?

@@ -14,8 +14,8 @@ Core intended experience:
 
 ## Current Route Responsibilities
 
-- `/dashboard` is the main workspace. It shows the current goal shell, roadmap progress, due review queue, Add Problem modal, and Progress table.
-- `/problems` is the user's Library. It keeps the inline Add Problem form and tracked-problem Progress table.
+- `/dashboard` is the main workspace. It shows the current goal shell, due review queue, roadmap progress, recent-problem preview, and Track Problem modal.
+- `/problems` is the user's Library. It shows tracked problems with the shared Progress table, the all-category LeetCode catalog, a Track Problem modal, and an import entry point.
 - `/problems/import` is the LeetCode Practice History import preview flow.
 - `/roadmaps/neetcode-150` is the NeetCode 150 checklist/planning page.
 - `/review` was intentionally removed as a page. Do not restore it. `app/review/actions.ts` still exists for Server Actions used by the dashboard review queue.
@@ -37,8 +37,8 @@ React form/UI -> Next.js Server Action -> typed data wrapper -> Supabase RPC -> 
 
 ## Completed Core Review Features
 
-- Add Problem is implemented through `app/problems/actions.ts`, `data/problems.ts`, and the `create_user_problem_with_timezone` RPC.
-- Add Problem supports practiced and scheduled start modes:
+- Track Problem is implemented through `app/problems/actions.ts`, `data/problems.ts`, and the `create_user_problem_with_timezone` RPC.
+- Track Problem supports practiced and scheduled start modes:
   - practiced mode counts as the first practice/review event.
   - scheduled mode creates a problem scheduled for review without counting practice.
 - Timezone-aware start-date validation is shared through `lib/time-zone.ts` and date-only validation through `lib/date-only.ts`.
@@ -95,7 +95,7 @@ Implemented parser behavior:
 - Normalizes difficulty to `easy`, `medium`, or `hard`.
 - Derives a best-effort LeetCode slug and LeetCode URL from the title.
 - Preserves raw `dateText`.
-- Adds normalized `acceptedDate`.
+- Adds normalized `historyDate` for both practiced and scheduled candidates.
 - Supports these date formats:
   - `Today`
   - `Yesterday`
@@ -103,7 +103,7 @@ Implemented parser behavior:
   - month/day
   - `YYYY.MM.DD`
 - Invalid dates are clearly labeled in the preview and do not block preview.
-- Canonically matched rows display catalog title, slug, difficulty, LeetCode URL, topics, and category while preserving parsed history fields such as accepted date and submission count.
+- Canonically matched rows display catalog title, slug, difficulty, LeetCode URL, topics, and category while preserving parsed history fields such as history date, result, import intent, and submission count.
 - Import matching uses the expanded catalog across all LeetCode categories.
 - Existing Library matching uses `user_problems.leetcode_frontend_id` first, with `user_problems.leetcode_slug` as a legacy fallback.
 - Rows that are not found in the current canonical catalog are shown as Unmatched and keep their practiced/scheduled intent.
@@ -117,7 +117,7 @@ The import flow is preview-only. There is no Confirm import behavior, import Ser
 - Custom/shared roadmaps are later.
 - Imported LeetCode history is external solved history, not an in-app review.
 - Bulk import should not create fake `review_events`.
-- Accepted date is the primary signal for initial imported calibration priority.
+- Normalized history date is the primary signal for initial imported calibration priority.
 - Submission count is informational and should not be treated as a reliable failure/mastery signal.
 - A giant fixed future queue should not be pre-generated.
 - Store durable problem/review state and compute today's plan dynamically.
@@ -160,12 +160,12 @@ Why:
 
 - Preview now resolves accepted rows to canonical catalog records.
 - The next decision is how imported external history becomes durable `user_problems` state without creating fake in-app review events.
-- Imported scheduling should use accepted dates for initial calibration.
+- Imported scheduling should use normalized history dates for initial calibration, with practiced rows coming from Accepted history and scheduled rows coming from attempted-only history.
 
 Recommended incremental sequence:
 
 1. Design the dedicated bulk-import RPC and Server Action.
-2. Define imported calibration scheduling from accepted dates.
+2. Define imported calibration scheduling from normalized history dates.
 3. Decide how unmatched rows are excluded or reported during confirm.
 4. Enable Confirm import.
 
