@@ -1,25 +1,7 @@
-import {
-  AlarmClockOff,
-  Check,
-  RotateCcw,
-  Trophy,
-  type LucideIcon,
-} from "lucide-react";
-import { snoozeReviewAction, submitReviewAction } from "@/app/review/actions";
 import { DueDateText } from "@/components/due-date-text";
 import { DifficultyBadge } from "@/components/problem-table-primitives";
-import { TimeZoneHiddenField } from "@/components/time-zone-hidden-field";
-import { type DueProblem, type ReviewRating } from "@/data/reviews";
-
-const ratings: Array<{
-  value: ReviewRating;
-  label: string;
-  Icon: LucideIcon;
-}> = [
-  { value: "again", label: "Redo", Icon: RotateCcw },
-  { value: "good", label: "OK", Icon: Check },
-  { value: "easy", label: "Great", Icon: Trophy },
-];
+import { ReviewTaskActions } from "@/components/review-task-actions";
+import { type DueProblem } from "@/data/reviews";
 
 type ReviewQueueSectionProps = {
   dueProblems: DueProblem[];
@@ -88,65 +70,7 @@ export function ReviewQueueSection({
               </div>
 
               <div className="mt-auto pt-5">
-                <div className="flex gap-2">
-                  {ratings.map((rating) => {
-                    const Icon = rating.Icon;
-
-                    return (
-                      <form
-                        key={rating.value}
-                        action={submitReviewAction}
-                        className="flex-1"
-                      >
-                        <input type="hidden" name="return_to" value={returnTo} />
-                        <input
-                          type="hidden"
-                          name="user_problem_id"
-                          value={problem.id}
-                        />
-                        <input
-                          type="hidden"
-                          name="expected_schedule_version"
-                          value={problem.schedule_version}
-                        />
-                        <button
-                          type="submit"
-                          name="rating"
-                          value={rating.value}
-                          className="inline-flex h-8 w-full items-center justify-center gap-1 rounded-md border border-zinc-300 bg-white px-1.5 text-xs font-semibold text-zinc-800 transition hover:border-zinc-400 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-700"
-                        >
-                          <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                          {rating.label}
-                        </button>
-                      </form>
-                    );
-                  })}
-                </div>
-
-                <form action={snoozeReviewAction} className="mt-2">
-                  <input type="hidden" name="return_to" value={returnTo} />
-                  <input
-                    type="hidden"
-                    name="user_problem_id"
-                    value={problem.id}
-                  />
-                  <input
-                    type="hidden"
-                    name="expected_schedule_version"
-                    value={problem.schedule_version}
-                  />
-                  <TimeZoneHiddenField />
-                  <button
-                    type="submit"
-                    className="inline-flex h-8 w-full items-center justify-center gap-1 rounded-md border border-dashed border-zinc-300 bg-transparent px-2 text-xs font-semibold text-zinc-500 transition hover:border-zinc-400 hover:bg-zinc-100/70 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-200 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-200 dark:focus-visible:ring-zinc-700"
-                  >
-                    <AlarmClockOff
-                      className="h-3.5 w-3.5"
-                      aria-hidden="true"
-                    />
-                    Skip today
-                  </button>
-                </form>
+                <ReviewTaskActions problem={problem} returnTo={returnTo} />
               </div>
             </li>
           ))}

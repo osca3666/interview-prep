@@ -80,7 +80,7 @@ export async function signUpAction(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const emailRedirectTo = await getAuthCallbackUrl("/dashboard");
+  const emailRedirectTo = await getAuthCallbackUrl("/study-plan/setup");
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -104,7 +104,7 @@ export async function signUpAction(formData: FormData) {
   }
 
   if (data.session) {
-    redirect("/dashboard");
+    redirect("/study-plan/setup");
   }
 
   redirect("/sign-up?message=check_email");

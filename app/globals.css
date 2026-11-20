@@ -37,6 +37,54 @@ body {
   box-sizing: border-box;
 }
 
+.authenticated-app-shell {
+  --app-sidebar-column-width: 4rem;
+  --app-sidebar-visible-width: 4rem;
+
+  display: grid;
+  grid-template-columns:
+    var(--app-sidebar-column-width)
+    minmax(0, 1fr);
+  min-height: 100dvh;
+  overflow-x: clip;
+  transition: grid-template-columns 200ms ease;
+}
+
+.authenticated-app-shell[data-mobile-sidebar="expanded"] {
+  --app-sidebar-visible-width: 15rem;
+}
+
+.authenticated-app-sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  width: var(--app-sidebar-visible-width);
+  height: 100dvh;
+  min-height: 100dvh;
+  transition: width 200ms ease;
+}
+
+.authenticated-app-main {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+}
+
+@media (min-width: 64rem) {
+  .authenticated-app-shell[data-desktop-sidebar="expanded"] {
+    --app-sidebar-column-width: 15rem;
+    --app-sidebar-visible-width: 15rem;
+  }
+
+  .authenticated-app-shell[data-desktop-sidebar="collapsed"] {
+    --app-sidebar-column-width: 4rem;
+    --app-sidebar-visible-width: 4rem;
+  }
+}
+
 .scrollbar-app {
   scrollbar-color: #a1a1aa transparent;
   scrollbar-width: thin;
@@ -75,4 +123,76 @@ body {
 .dark .scrollbar-app::-webkit-scrollbar-thumb:hover {
   background: #71717a;
   background-clip: padding-box;
+}
+
+.dashboard-layout-container {
+  container-type: inline-size;
+}
+
+.dashboard-workspace {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dashboard-primary-stack,
+.dashboard-supporting-rail {
+  display: contents;
+}
+
+.dashboard-today {
+  order: 1;
+}
+
+.dashboard-trend {
+  order: 2;
+}
+
+[data-dashboard-card="consistency"] {
+  order: 3;
+}
+
+[data-dashboard-card="roadmap"] {
+  order: 4;
+}
+
+[data-dashboard-card="study-plan"] {
+  order: 5;
+}
+
+.dashboard-recent {
+  order: 6;
+}
+
+.consistency-calendar-grid {
+  display: grid;
+  width: 100%;
+  max-width: 17.5rem;
+  margin-inline: auto;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  column-gap: 0.25rem;
+  row-gap: 0.25rem;
+}
+
+@container (min-width: 54rem) {
+  .dashboard-workspace {
+    align-items: start;
+    grid-template-columns: minmax(0, 4fr) minmax(15rem, 1fr);
+  }
+
+  .dashboard-primary-stack,
+  .dashboard-supporting-rail {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .dashboard-primary-stack {
+    grid-column: 1;
+  }
+
+  .dashboard-supporting-rail {
+    grid-column: 2;
+  }
 }

@@ -50,8 +50,8 @@ The core user experience is:
 
 ## Current Product Rules
 
-- Review ratings shown to users are `Redo`, `OK`, and `Great`.
-- Their backend values are `again`, `good`, and `easy`.
+- Review ratings shown to users and stored by the backend are `Bad`, `OK`, and `Good`.
+- Their canonical values are `bad`, `ok`, and `good`; do not reintroduce legacy rating aliases.
 - `Skip today` is not a review rating.
 - Skip today must not change mastery, review count, review stage, or review history.
 - Imported LeetCode history is external solved history, not an in-app review.
@@ -97,3 +97,10 @@ Before using a Next.js API or convention that may have changed, read the relevan
 `node_modules/next/dist/docs/`
 
 Do not rely only on remembered behavior from older Next.js versions.
+
+## Visual Testing
+
+- Run browser checks with `npm run test:visual`.
+- Keep route specs in `tests/e2e/` and reuse the shared visual helpers.
+- Open and inspect every required screenshot; passing assertions alone are not visual verification.
+- Keep demo fixtures local and deterministic. Never write mock browser-test activity to Supabase.

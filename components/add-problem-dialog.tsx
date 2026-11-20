@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { AddProblemForm } from "@/components/add-problem-form";
 import { type LeetCodeProblemSearchOption } from "@/lib/leetcode-catalog-types";
 
@@ -28,7 +29,10 @@ export function AddProblemDialog({
   showTrigger = true,
 }: AddProblemDialogProps) {
   const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const isOpen = open ?? uncontrolledIsOpen;
+  const portalTarget = typeof document === "undefined" ? null : document.body;
 
   const setIsOpen = useCallback((nextIsOpen: boolean) => {
     onOpenChange?.(nextIsOpen);
@@ -43,20 +47,61 @@ export function AddProblemDialog({
       return;
     }
 
+    const previouslyFocused = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : triggerRef.current;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        event.preventDefault();
         setIsOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) {
+        return;
+      }
+
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ));
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (document.activeElement === dialogRef.current || !dialogRef.current.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    const frame = window.requestAnimationFrame(() => dialogRef.current?.focus());
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+      previouslyFocused?.focus();
+    };
   }, [isOpen, setIsOpen]);
 
   return (
     <>
       {showTrigger ? (
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => setIsOpen(true)}
           className={triggerClassName}
@@ -65,17 +110,20 @@ export function AddProblemDialog({
         </button>
       ) : null}
 
-      {isOpen ? (
+      {portalTarget && isOpen ? createPortal(
         <div
-          className="scrollbar-app fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-zinc-950/40 px-4 pt-12 pb-6 backdrop-blur-sm sm:pt-20 sm:pb-10 dark:bg-black/60"
+          data-add-problem-dialog-overlay
+          className="scrollbar-app fixed inset-0 z-[60] flex min-h-dvh w-screen items-start justify-center overflow-y-auto overscroll-contain bg-zinc-950/50 px-4 pt-12 pb-6 backdrop-blur-sm sm:pt-20 sm:pb-10 dark:bg-black/70"
           role="presentation"
           onMouseDown={() => setIsOpen(false)}
         >
           <div
+            ref={dialogRef}
             role="dialog"
+            tabIndex={-1}
             aria-modal="true"
             aria-labelledby="add-problem-dialog-title"
-            className="scrollbar-app max-h-[90vh] w-[min(calc(100vw-2rem),900px)] overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
+            className="scrollbar-app relative max-h-[90dvh] w-[min(calc(100vw-2rem),900px)] overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 sm:px-6 dark:border-zinc-800">
@@ -102,7 +150,8 @@ export function AddProblemDialog({
               initialFrontendId={initialFrontendId}
             />
           </div>
-        </div>
+        </div>,
+        portalTarget,
       ) : null}
     </>
   );

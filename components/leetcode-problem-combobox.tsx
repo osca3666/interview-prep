@@ -13,22 +13,35 @@ function getOptionLabel(option: LeetCodeProblemSearchOption) {
   return `${option.frontendId}. ${option.title}`;
 }
 
-function matchesQuery(option: LeetCodeProblemSearchOption, query: string) {
+function getMatchRank(option: LeetCodeProblemSearchOption, query: string) {
   const normalizedQuery = query.trim().toLowerCase();
+  const frontendId = option.frontendId.trim().toLowerCase();
+  const title = option.title.trim().toLowerCase();
 
-  if (!normalizedQuery) {
-    return false;
+  if (!normalizedQuery) return null;
+  if (frontendId === normalizedQuery) return 0;
+  if (title === normalizedQuery) return 1;
+  if (frontendId.startsWith(normalizedQuery)) return 2;
+  if (title.startsWith(normalizedQuery)) return 3;
+  if (title.includes(normalizedQuery)) return 4;
+  return null;
+}
+
+export function filterLeetCodeProblemOptions(
+  options: LeetCodeProblemSearchOption[],
+  query: string,
+  limit = 8,
+) {
+  if (!query.trim()) {
+    return [];
   }
 
-  return [
-    option.frontendId,
-    option.title,
-    option.difficulty,
-    option.paidOnly ? "premium" : "free",
-  ]
-    .join(" ")
-    .toLowerCase()
-    .includes(normalizedQuery);
+  return options
+    .map((option, index) => ({ option, index, rank: getMatchRank(option, query) }))
+    .filter((match): match is typeof match & { rank: number } => match.rank !== null)
+    .sort((left, right) => left.rank - right.rank || left.index - right.index)
+    .slice(0, limit)
+    .map(({ option }) => option);
 }
 
 export function LeetCodeProblemCombobox({
@@ -50,11 +63,7 @@ export function LeetCodeProblemCombobox({
   const [selectedOption, setSelectedOption] =
     useState<LeetCodeProblemSearchOption | null>(initialOption);
   const filteredOptions = useMemo(() => {
-    if (!query.trim()) {
-      return [];
-    }
-
-    return options.filter((option) => matchesQuery(option, query)).slice(0, 8);
+    return filterLeetCodeProblemOptions(options, query);
   }, [options, query]);
   const showSuggestions =
     query.trim().length > 0 &&

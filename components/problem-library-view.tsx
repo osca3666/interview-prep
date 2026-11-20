@@ -10,6 +10,10 @@ import {
   ProblemTitleLink,
 } from "@/components/problem-table-primitives";
 import {
+  SortableTableHeader,
+  type SortDirection,
+} from "@/components/sortable-table-header";
+import {
   type LeetCodeProblemLibraryOption,
   type LeetCodeProblemSearchOption,
 } from "@/lib/leetcode-catalog-types";
@@ -35,6 +39,9 @@ type ProblemLibraryViewProps = {
 };
 
 const catalogResultsPerPage = 25;
+type CatalogSortKey = "problem" | "difficulty" | "topics" | "mastery" | "action";
+const catalogCollator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
+const catalogDifficultyRank: Record<string, number> = { easy: 0, medium: 1, hard: 2 };
 
 const tabButtonClassName =
   "inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300 dark:focus-visible:ring-zinc-700";
@@ -92,6 +99,10 @@ export function ProblemLibraryView({
   const [activeView, setActiveView] = useState<"tracked" | "all">("tracked");
   const [catalogSearchQuery, setCatalogSearchQuery] = useState("");
   const [catalogPage, setCatalogPage] = useState(1);
+  const [catalogSort, setCatalogSort] = useState<{
+    key: CatalogSortKey;
+    direction: SortDirection;
+  } | null>(null);
   const [selectedFrontendId, setSelectedFrontendId] = useState<string | null>(
     null,
   );
@@ -148,18 +159,49 @@ export function ProblemLibraryView({
       return searchableText.includes(normalizedCatalogSearchQuery);
     });
   }, [catalogProblems, normalizedCatalogSearchQuery]);
+  const sortedCatalogProblems = useMemo(() => {
+    if (!catalogSort) return filteredCatalogProblems;
+    const direction = catalogSort.direction === "asc" ? 1 : -1;
+    const trackedProblem = (problem: LeetCodeProblemLibraryOption) =>
+      trackedProblemsByFrontendId.get(problem.frontendId)
+      ?? trackedProblemsBySlug.get(problem.slug);
+    const compare = (left: LeetCodeProblemLibraryOption, right: LeetCodeProblemLibraryOption) => {
+      switch (catalogSort.key) {
+        case "problem":
+          return catalogCollator.compare(left.frontendId, right.frontendId)
+            || catalogCollator.compare(left.title, right.title);
+        case "difficulty":
+          return (catalogDifficultyRank[left.difficulty.toLowerCase()] ?? 3)
+            - (catalogDifficultyRank[right.difficulty.toLowerCase()] ?? 3);
+        case "topics":
+          return catalogCollator.compare(left.topics.join(" "), right.topics.join(" "));
+        case "mastery":
+          return (trackedProblem(left)?.mastery_score ?? -1)
+            - (trackedProblem(right)?.mastery_score ?? -1);
+        case "action":
+          return Number(Boolean(trackedProblem(left))) - Number(Boolean(trackedProblem(right)));
+      }
+    };
+    return filteredCatalogProblems
+      .map((problem, index) => ({ problem, index }))
+      .sort((left, right) =>
+        direction * compare(left.problem, right.problem)
+        || catalogCollator.compare(left.problem.frontendId, right.problem.frontendId)
+        || left.index - right.index)
+      .map(({ problem }) => problem);
+  }, [catalogSort, filteredCatalogProblems, trackedProblemsByFrontendId, trackedProblemsBySlug]);
   const totalCatalogPages = Math.max(
     1,
-    Math.ceil(filteredCatalogProblems.length / catalogResultsPerPage),
+    Math.ceil(sortedCatalogProblems.length / catalogResultsPerPage),
   );
   const effectiveCatalogPage = Math.min(catalogPage, totalCatalogPages);
   const visibleCatalogProblems = useMemo(
     () =>
-      filteredCatalogProblems.slice(
+      sortedCatalogProblems.slice(
         (effectiveCatalogPage - 1) * catalogResultsPerPage,
         effectiveCatalogPage * catalogResultsPerPage,
       ),
-    [effectiveCatalogPage, filteredCatalogProblems],
+    [effectiveCatalogPage, sortedCatalogProblems],
   );
   const firstVisibleCatalogResult =
     filteredCatalogProblems.length === 0
@@ -198,6 +240,31 @@ export function ProblemLibraryView({
     setRowDialogOpen(true);
   }
 
+  function updateCatalogSort(key: CatalogSortKey) {
+    setCatalogSort((current) => current?.key === key
+      ? { key, direction: current.direction === "asc" ? "desc" : "asc" }
+      : { key, direction: "asc" });
+    setCatalogPage(1);
+  }
+
+  function catalogHeader(
+    key: CatalogSortKey,
+    label: string,
+    className: string,
+    align: "left" | "center" | "right" = "center",
+  ) {
+    return (
+      <SortableTableHeader
+        label={label}
+        active={catalogSort?.key === key}
+        direction={catalogSort?.key === key ? catalogSort.direction : "asc"}
+        align={align}
+        className={className}
+        onSort={() => updateCatalogSort(key)}
+      />
+    );
+  }
+
   return (
     <div className="mt-8">
       <div className="min-w-0">
@@ -208,6 +275,7 @@ export function ProblemLibraryView({
             headerContent={viewToggle}
             layout="auto"
             searchPlaceholder="Search tracked problems"
+            sortable
             emptyTitle="No problems yet"
             emptyDescription="Track your first LeetCode problem to start building your review library."
           />
@@ -246,33 +314,11 @@ export function ProblemLibraryView({
                     className="grid grid-cols-[minmax(20rem,1fr)_8rem_minmax(14rem,22rem)_8rem_7rem] border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
                     role="row"
                   >
-                    <div className="px-5 py-3" role="columnheader">
-                      Problem
-                    </div>
-                    <div
-                      className="flex items-center justify-center px-5 py-3 text-center"
-                      role="columnheader"
-                    >
-                      Difficulty
-                    </div>
-                    <div
-                      className="flex items-center justify-center px-5 py-3 text-center"
-                      role="columnheader"
-                    >
-                      Topics
-                    </div>
-                    <div
-                      className="flex items-center justify-center px-5 py-3 text-center"
-                      role="columnheader"
-                    >
-                      Mastery
-                    </div>
-                    <div
-                      className="flex items-center justify-end px-5 py-3 text-right"
-                      role="columnheader"
-                    >
-                      Action
-                    </div>
+                    {catalogHeader("problem", "Problem", "px-5 py-3", "left")}
+                    {catalogHeader("difficulty", "Difficulty", "px-5 py-3")}
+                    {catalogHeader("topics", "Topics", "px-5 py-3")}
+                    {catalogHeader("mastery", "Mastery", "px-5 py-3")}
+                    {catalogHeader("action", "Action", "px-5 py-3", "right")}
                   </div>
                   <div className="divide-y divide-zinc-200 bg-white text-sm dark:divide-zinc-800 dark:bg-zinc-900">
                   {visibleCatalogProblems.map((problem) => {

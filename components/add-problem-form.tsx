@@ -1,6 +1,7 @@
 import { addProblemAction } from "@/app/problems/actions";
 import { LeetCodeProblemCombobox } from "@/components/leetcode-problem-combobox";
 import { ProblemStartingStatusFields } from "@/components/problem-starting-status-fields";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { type LeetCodeProblemSearchOption } from "@/lib/leetcode-catalog-types";
 
 type AddProblemFormProps = {
@@ -82,8 +83,7 @@ export function AddProblemForm({
             : "mt-5"
         }
       >
-        <button
-          type="submit"
+        <PendingSubmitButton
           className={
             isModal
               ? `${submitButtonClassName} sm:w-auto`
@@ -91,7 +91,7 @@ export function AddProblemForm({
           }
         >
           Track problem
-        </button>
+        </PendingSubmitButton>
       </div>
     </form>
   );

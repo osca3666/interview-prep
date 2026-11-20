@@ -12,10 +12,10 @@ import {
   isValidTimeZone,
   normalizeTimeZone,
 } from "@/lib/time-zone";
+import { isStudyRating } from "@/lib/ratings";
 
 const notesMaxLength = 4000;
 const validStartModes = new Set(["practiced", "scheduled"]);
-const validRatings = new Set(["again", "hard", "good", "easy"]);
 const controlledRpcMessages = new Set([
   "not_authenticated",
   "invalid_start_mode",
@@ -105,7 +105,7 @@ export async function addProblemAction(formData: FormData) {
   }
 
   if (startMode === "practiced") {
-    if (!validRatings.has(rating)) {
+    if (!isStudyRating(rating)) {
       redirect(`${returnTo}?error=invalid_rating`);
     }
 
@@ -127,7 +127,7 @@ export async function addProblemAction(formData: FormData) {
     p_leetcode_topics: catalogProblem.topics,
     p_notes: notes,
     p_start_mode: startMode,
-    p_rating: startMode === "practiced" ? rating : "good",
+    p_rating: startMode === "practiced" ? rating : "ok",
     p_start_date: startDate,
     p_time_zone: timeZone,
   });

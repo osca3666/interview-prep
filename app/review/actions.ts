@@ -19,8 +19,8 @@ import {
   isValidTimeZone,
   normalizeTimeZone,
 } from "@/lib/time-zone";
+import { isStudyRating } from "@/lib/ratings";
 
-const validRatings = new Set<ReviewRating>(["again", "hard", "good", "easy"]);
 const controlledRpcMessages = new Set([
   "stale_review",
   "problem_not_due",
@@ -73,7 +73,7 @@ export async function submitReviewAction(formData: FormData) {
 
   if (
     !isUuid(userProblemId) ||
-    !validRatings.has(rating) ||
+    !isStudyRating(rating) ||
     expectedScheduleVersion === null
   ) {
     redirect(`${returnTo}?error=invalid_submission`);

@@ -7,6 +7,10 @@ import {
   DifficultyBadge,
   ProblemTitleLink,
 } from "@/components/problem-table-primitives";
+import {
+  SortableTableHeader,
+  type SortDirection,
+} from "@/components/sortable-table-header";
 import { type PracticeHistoryProblem } from "@/data/practice-history";
 
 type ProgressTableProps = {
@@ -21,7 +25,52 @@ type ProgressTableProps = {
   limit?: number;
   showSearch?: boolean;
   showReviews?: boolean;
+  sortable?: boolean;
 };
+
+type ProgressSortKey =
+  | "problem"
+  | "difficulty"
+  | "mastery"
+  | "lastReviewed"
+  | "nextReview"
+  | "reviews";
+
+const problemCollator = new Intl.Collator("en", {
+  numeric: true,
+  sensitivity: "base",
+});
+const difficultyRank: Record<string, number> = { easy: 0, medium: 1, hard: 2 };
+
+function dateSortValue(value: string | null) {
+  const parsed = value ? Date.parse(value) : Number.NaN;
+  return Number.isFinite(parsed) ? parsed : Number.NEGATIVE_INFINITY;
+}
+
+function compareProgressProblems(
+  left: PracticeHistoryProblem,
+  right: PracticeHistoryProblem,
+  key: ProgressSortKey,
+) {
+  switch (key) {
+    case "problem":
+      return problemCollator.compare(
+        left.leetcode_frontend_id ?? left.title,
+        right.leetcode_frontend_id ?? right.title,
+      ) || problemCollator.compare(left.title, right.title);
+    case "difficulty":
+      return (difficultyRank[left.difficulty.toLowerCase()] ?? 3)
+        - (difficultyRank[right.difficulty.toLowerCase()] ?? 3);
+    case "mastery":
+      return left.mastery_score - right.mastery_score;
+    case "lastReviewed":
+      return dateSortValue(left.last_reviewed_at) - dateSortValue(right.last_reviewed_at);
+    case "nextReview":
+      return dateSortValue(left.next_review_at) - dateSortValue(right.next_review_at);
+    case "reviews":
+      return left.total_reviews - right.total_reviews;
+  }
+}
 
 export function ProgressTable({
   problems,
@@ -35,8 +84,13 @@ export function ProgressTable({
   limit,
   showSearch = true,
   showReviews = true,
+  sortable = false,
 }: ProgressTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [sort, setSort] = useState<{
+    key: ProgressSortKey;
+    direction: SortDirection;
+  } | null>(null);
   const searchInputId = `progress-search-${title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")}`;
@@ -59,12 +113,22 @@ export function ProgressTable({
       return searchableText.includes(normalizedQuery);
     });
   }, [normalizedQuery, problems]);
+  const sortedProblems = useMemo(() => {
+    if (!sortable || !sort) return filteredProblems;
+    const direction = sort.direction === "asc" ? 1 : -1;
+    return filteredProblems
+      .map((problem, index) => ({ problem, index }))
+      .sort((left, right) =>
+        direction * compareProgressProblems(left.problem, right.problem, sort.key)
+        || left.index - right.index)
+      .map(({ problem }) => problem);
+  }, [filteredProblems, sort, sortable]);
   const visibleProblems = useMemo(
     () =>
       typeof limit === "number"
-        ? filteredProblems.slice(0, limit)
-        : filteredProblems,
-    [filteredProblems, limit],
+        ? sortedProblems.slice(0, limit)
+        : sortedProblems,
+    [limit, sortedProblems],
   );
   const hasHeaderControls =
     (showSearch && problems.length > 0) || Boolean(headerAction);
@@ -82,6 +146,33 @@ export function ProgressTable({
     layout === "auto"
       ? "scrollbar-app max-h-[420px] overflow-y-auto"
       : "scrollbar-app min-h-[320px] max-h-[420px] overflow-y-auto";
+
+  function updateSort(key: ProgressSortKey) {
+    setSort((current) => current?.key === key
+      ? { key, direction: current.direction === "asc" ? "desc" : "asc" }
+      : { key, direction: "asc" });
+  }
+
+  function header(
+    key: ProgressSortKey,
+    label: string,
+    className: string,
+    align: "left" | "center" = "center",
+  ) {
+    if (!sortable) {
+      return <div className={className} role="columnheader">{label}</div>;
+    }
+    return (
+      <SortableTableHeader
+        label={label}
+        active={sort?.key === key}
+        direction={sort?.key === key ? sort.direction : "asc"}
+        align={align}
+        className={className}
+        onSort={() => updateSort(key)}
+      />
+    );
+  }
 
   return (
     <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -133,29 +224,12 @@ export function ProgressTable({
               className={`${gridWidthClassName} ${gridTemplateClassName} sticky top-0 z-10 border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400`}
               role="row"
             >
-              <div className={problemHeaderCellClassName} role="columnheader">
-                Problem
-              </div>
-              <div className={centeredHeaderCellClassName} role="columnheader">
-                Difficulty
-              </div>
-              <div className={centeredHeaderCellClassName} role="columnheader">
-                Mastery
-              </div>
-              <div className={centeredHeaderCellClassName} role="columnheader">
-                Last reviewed
-              </div>
-              <div className={centeredHeaderCellClassName} role="columnheader">
-                Next review
-              </div>
-              {showReviews ? (
-                <div
-                  className={centeredHeaderCellClassName}
-                  role="columnheader"
-                >
-                  Reviews
-                </div>
-              ) : null}
+              {header("problem", "Problem", problemHeaderCellClassName, "left")}
+              {header("difficulty", "Difficulty", centeredHeaderCellClassName)}
+              {header("mastery", "Mastery", centeredHeaderCellClassName)}
+              {header("lastReviewed", "Last reviewed", centeredHeaderCellClassName)}
+              {header("nextReview", "Next review", centeredHeaderCellClassName)}
+              {showReviews ? header("reviews", "Reviews", centeredHeaderCellClassName) : null}
             </div>
             {filteredProblems.length === 0 ? (
               <div className={`${gridWidthClassName} p-6`}>

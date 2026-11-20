@@ -18,6 +18,7 @@ type RoadmapUserProblem = Pick<
   | "total_reviews"
   | "next_review_at"
   | "lifecycle_state"
+  | "external_practice_status"
 >;
 type RoadmapDetailUserProblem = Pick<
   Tables<"user_problems">,
@@ -28,6 +29,7 @@ type RoadmapDetailUserProblem = Pick<
   | "total_reviews"
   | "last_reviewed_at"
   | "next_review_at"
+  | "external_practice_status"
 >;
 
 export type RoadmapProblemStatus =
@@ -78,7 +80,10 @@ function getRoadmapProblemStatus(
     return "strong";
   }
 
-  if (problem.total_reviews > 0) {
+  if (
+    problem.total_reviews > 0 ||
+    problem.external_practice_status === "accepted"
+  ) {
     return "reviewed";
   }
 
@@ -92,7 +97,7 @@ export async function listNeetcode150RoadmapRows(
   const problemsResult = await supabase
     .from("user_problems")
     .select(
-      "id,leetcode_slug,mastery_score,review_stage,total_reviews,last_reviewed_at,next_review_at",
+      "id,leetcode_slug,mastery_score,review_stage,total_reviews,last_reviewed_at,next_review_at,external_practice_status",
     )
     .eq("user_id", userId);
 
@@ -141,7 +146,7 @@ export async function getRoadmapProgress(
   const problemsResult = await supabase
     .from("user_problems")
     .select(
-      "leetcode_slug,title,difficulty,mastery_score,review_stage,total_reviews,next_review_at,lifecycle_state",
+      "leetcode_slug,title,difficulty,mastery_score,review_stage,total_reviews,next_review_at,lifecycle_state,external_practice_status",
     )
     .eq("user_id", userId);
 
@@ -178,7 +183,9 @@ export async function getRoadmapProgress(
       trackedCount: trackedRoadmapProblems.length,
       unseenCount: neetcode150Problems.length - trackedRoadmapProblems.length,
       reviewedCount: trackedRoadmapProblems.filter(
-        (problem) => problem.total_reviews > 0,
+        (problem) =>
+          problem.total_reviews > 0 ||
+          problem.external_practice_status === "accepted",
       ).length,
       strongCount: trackedRoadmapProblems.filter(isStrongProblem).length,
       nextSuggestedProblems,

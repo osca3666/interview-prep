@@ -2,7 +2,7 @@
 
 ## MVP Summary
 
-LeetCode Review is a lightweight roadmap-based spaced-repetition tracker for LeetCode practice. The MVP helps a user save problems, preview imported LeetCode history, follow a built-in roadmap, review due problems, and track progress over time.
+LeetCode Review is a lightweight roadmap-based spaced-repetition tracker for LeetCode practice. The MVP helps a user track problems, import LeetCode history, follow a built-in roadmap, review due problems, and track progress over time.
 
 The main workspace is `/dashboard`. The supporting Library page is `/problems`.
 
@@ -14,7 +14,7 @@ Estimated tester time: 10-15 minutes.
 - Shows `/dashboard` as the main review workspace.
 - Lets users track LeetCode problems from the dashboard `Track Problem` modal.
 - Lets users track LeetCode problems from `/problems`, the Library page.
-- Lets users preview pasted LeetCode Practice History text from `/problems/import`.
+- Lets users preview and import previously Accepted LeetCode Practice History from `/problems/import` without creating fake reviews or mastery.
 - Shows a NeetCode 150 roadmap checklist/planning page at `/roadmaps/neetcode-150`.
 - Lets users start one untracked roadmap problem for today from the roadmap page.
 - Supports two Track Problem starting states:
@@ -36,8 +36,6 @@ Estimated tester time: 10-15 minutes.
 
 The beta should not be evaluated as if these features exist:
 
-- Confirm/import saved LeetCode history to the database
-- Bulk import persistence
 - Goal planning
 - AI coach
 - Calendar
@@ -107,16 +105,18 @@ Expected result: review saves, the due queue updates, and Progress updates the r
 
 Expected result: Library works as a supporting tracked-problem browser and catalog view.
 
-### 6. Preview LeetCode Practice History Import
+### 6. Import LeetCode Practice History
 
 1. Open `/problems/import` from the Library import link.
 2. Open the linked LeetCode Practice History page.
 3. Paste copied Practice History text into the textarea.
 4. Click `Preview import`.
-5. Review the Ready to import as practiced, Ready to schedule, Already in Library, Unmatched, and Duplicate rows removed sections.
-6. Confirm the import/confirm button is disabled or clearly marked as coming next.
+5. Review the previously Accepted, attempted-only, Already in Library, Unmatched, and Duplicate rows removed sections.
+6. Click `Import problems`.
+7. Confirm the result summary reports imported, already tracked, attempted-only skipped, and failed counts.
+8. Return to Library and confirm newly imported Accepted problems appear with zero in-app reviews and zero mastery.
 
-Expected result: the page previews parsed history and Library matches without saving anything to the database.
+Expected result: Accepted history is tracked as unknown mastery without fake review events; attempted-only and unmatched rows are reported but not imported; existing progress is preserved.
 
 ### 7. Check NeetCode 150 Roadmap
 
@@ -193,18 +193,20 @@ Expected result: the app remains readable and usable in both themes.
 - [ ] Catalog row Track action opens the Track Problem modal with the selected problem.
 - [ ] Empty state is clear for a new user.
 
-### Import Preview
+### Practice History Import
 
 - [ ] `/problems/import` is protected for signed-in users.
 - [ ] The LeetCode Practice History link opens `https://leetcode.com/progress/`.
 - [ ] Pasted full-page LeetCode text can be previewed.
-- [ ] Accepted rows appear under Ready to import as practiced.
-- [ ] Non-accepted-only rows appear under Ready to schedule.
+- [ ] Accepted rows appear under Ready to import as previously accepted.
+- [ ] Non-accepted-only rows are clearly labeled as skipped in V1.
 - [ ] Duplicate rows are counted separately.
-- [ ] Already-in-Library problems are separated from Ready to import and Ready to schedule.
+- [ ] Already-in-Library problems are separated from Ready to import and attempted-only rows.
 - [ ] Invalid dates are visibly flagged but do not block preview.
-- [ ] No database write happens from preview.
-- [ ] Confirm import remains disabled or coming soon.
+- [ ] Preview alone makes no database write.
+- [ ] `Import problems` shows loading and a clear result summary.
+- [ ] Imported Accepted rows have zero in-app reviews/mastery and no synthetic review event.
+- [ ] Repeating the same import reports already tracked without overwriting existing progress.
 
 ### Roadmap
 
@@ -296,8 +298,6 @@ Any extra context, problem URL, or timing details.
 
 These are intentionally outside the MVP beta scope:
 
-- Confirm/import saved LeetCode history to the database
-- Bulk import persistence
 - Goal planning
 - AI coach
 - Calendar

@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const ratings = [
-  { value: "again", label: "Redo" },
-  { value: "good", label: "OK" },
-  { value: "easy", label: "Great" },
-];
+import { studyRatings } from "@/lib/ratings";
 
 const dateFieldClassName =
   "mt-2 block h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-500 dark:focus:ring-zinc-800 dark:[color-scheme:dark]";
@@ -101,7 +97,7 @@ export function ProblemStartingStatusFields() {
                 How did it go?
               </legend>
               <div className="mt-2 grid grid-cols-3 gap-2">
-                {ratings.map((rating) => (
+                {studyRatings.map((rating) => (
                   <label
                     key={rating.value}
                     className="flex items-center gap-2 rounded-md border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950/50 dark:text-zinc-200"
@@ -110,7 +106,7 @@ export function ProblemStartingStatusFields() {
                       type="radio"
                       name="rating"
                       value={rating.value}
-                      defaultChecked={rating.value === "good"}
+                      defaultChecked={rating.value === "ok"}
                       className="h-4 w-4 border-zinc-300 text-zinc-950 dark:border-zinc-600 dark:bg-zinc-950 dark:text-sky-400 dark:focus:ring-sky-800"
                     />
                     {rating.label}

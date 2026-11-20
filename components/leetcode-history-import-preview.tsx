@@ -1,6 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
+import { CheckCircle2, LoaderCircle } from "lucide-react";
+import { importLeetCodeHistoryAction } from "@/app/problems/import/actions";
 import {
   DifficultyBadge,
   ProblemTitleLink,
@@ -15,6 +18,11 @@ import {
   type ExistingLibraryProblemForImport,
 } from "@/lib/leetcode-history-import-matching";
 import { type LeetCodeProblemLibraryOption } from "@/lib/leetcode-catalog-types";
+import type {
+  LeetCodeHistoryImportActionResult,
+  LeetCodeHistoryImportRequestProblem,
+  LeetCodeHistoryImportSummary,
+} from "@/lib/leetcode-history-import-persistence";
 
 type LeetCodeHistoryImportPreviewProps = {
   catalogProblems: LeetCodeProblemLibraryOption[];
@@ -24,7 +32,7 @@ type LeetCodeHistoryImportPreviewProps = {
 const samplePlaceholder = `Paste your LeetCode Practice History text here.
 
 Example:
-Jul 10, 2026
+2026.07.10
 46. Permutations
 Med.
 Accepted
@@ -181,10 +189,15 @@ export function LeetCodeHistoryImportPreview({
   catalogProblems,
   existingProblems,
 }: LeetCodeHistoryImportPreviewProps) {
+  const router = useRouter();
   const [rawText, setRawText] = useState("");
   const [result, setResult] = useState<LeetCodeHistoryParseResult | null>(
     getEmptyResult,
   );
+  const [importSummary, setImportSummary] =
+    useState<LeetCodeHistoryImportSummary | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [isImporting, startImportTransition] = useTransition();
   const duplicateRows = result?.duplicateRows ?? [];
   const stats = result?.stats;
   const hasPreview = result !== null;
@@ -201,17 +214,34 @@ export function LeetCodeHistoryImportPreview({
   const readyAsPracticedProblems = classification.readyAsPracticed;
   const readyToScheduleProblems = classification.readyToSchedule;
   const unmatchedProblems = classification.unmatched;
+  const importProblems = useMemo<LeetCodeHistoryImportRequestProblem[]>(() => {
+    const rows = [
+      ...readyAsPracticedProblems,
+      ...readyToScheduleProblems,
+      ...alreadyInLibraryProblems,
+    ];
+    return rows.map(({ problem }) => ({
+      frontendId: problem.frontendId,
+      importKind: problem.importKind,
+      historyDate: problem.historyDate,
+    }));
+  }, [
+    alreadyInLibraryProblems,
+    readyAsPracticedProblems,
+    readyToScheduleProblems,
+  ]);
   const statCards = useMemo(
     () =>
       stats
         ? [
             { label: "Problems found", value: stats.problemCount },
+            { label: "Accepted found", value: stats.practicedCount },
             {
-              label: "Ready as practiced",
+              label: "Ready to import",
               value: readyAsPracticedProblems.length,
             },
             {
-              label: "Ready to schedule",
+              label: "Attempted-only skipped",
               value: readyToScheduleProblems.length,
             },
             {
@@ -233,6 +263,32 @@ export function LeetCodeHistoryImportPreview({
 
   function handlePreview() {
     setResult(parseLeetCodePracticeHistory(rawText));
+    setImportSummary(null);
+    setImportError(null);
+  }
+
+  function handleImport() {
+    if (importProblems.length === 0 || isImporting) return;
+    setImportError(null);
+    startImportTransition(async () => {
+      const actionResult: LeetCodeHistoryImportActionResult =
+        await importLeetCodeHistoryAction(importProblems);
+      if (!actionResult.ok) {
+        setImportSummary(null);
+        setImportError(
+          actionResult.error === "not_authenticated"
+            ? "Your session ended. Sign in again before importing."
+            : actionResult.error === "too_many_problems"
+              ? "This import is too large. Import at most 4,000 unique problems at once."
+              : actionResult.error === "invalid_submission"
+                ? "The preview changed or contains invalid problem data. Preview the text again and retry."
+                : "We couldn't import these problems. Nothing was partially saved; please try again.",
+        );
+        return;
+      }
+      setImportSummary(actionResult.summary);
+      router.refresh();
+    });
   }
 
   return (
@@ -278,11 +334,19 @@ export function LeetCodeHistoryImportPreview({
           </button>
           <button
             type="button"
-            disabled
-            className="mt-3 inline-flex h-10 w-full cursor-not-allowed items-center justify-center rounded-md border border-dashed border-zinc-300 px-4 text-sm font-semibold text-zinc-400 dark:border-zinc-700 dark:text-zinc-500"
+            onClick={handleImport}
+            disabled={!hasPreview || importProblems.length === 0 || isImporting}
+            className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300 disabled:cursor-not-allowed dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white dark:focus-visible:ring-zinc-700"
           >
-            Confirm import coming next
+            {isImporting ? <LoaderCircle className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" /> : null}
+            {isImporting ? "Importing problems..." : "Import problems"}
           </button>
+          {importError ? <p role="alert" className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm leading-5 text-red-800 dark:bg-red-950/50 dark:text-red-200">{importError}</p> : null}
+          {importSummary ? <div role="status" className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
+            <p className="flex items-center gap-2 font-semibold"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />Import complete</p>
+            <p className="mt-1 leading-5">{importSummary.imported} imported · {importSummary.alreadyTracked} already tracked · {importSummary.skipped} attempted-only skipped · {importSummary.failed} failed</p>
+            {unmatchedProblems.length > 0 ? <p className="mt-1 text-xs text-emerald-800 dark:text-emerald-300">{unmatchedProblems.length} unmatched {unmatchedProblems.length === 1 ? "row was" : "rows were"} not sent.</p> : null}
+          </div> : null}
         </div>
       </section>
 
@@ -292,8 +356,7 @@ export function LeetCodeHistoryImportPreview({
             Import preview
           </h2>
           <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-            Parsed problems are staged for a future import step. Nothing is
-            saved yet.
+            Accepted problems can be imported with unknown mastery. Attempted-only rows stay visible but are skipped in V1.
           </p>
         </div>
 
@@ -309,7 +372,7 @@ export function LeetCodeHistoryImportPreview({
           </div>
         ) : (
           <div className="p-5">
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               {statCards.map((stat) => (
                 <StatCard
                   key={stat.label}
@@ -321,21 +384,21 @@ export function LeetCodeHistoryImportPreview({
 
             <details className="mt-5 rounded-md border border-zinc-200 bg-zinc-50/70 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/50">
               <summary className="cursor-pointer text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-                Ready to import as practiced ({readyAsPracticedProblems.length})
+                Ready to import: previously accepted ({readyAsPracticedProblems.length})
               </summary>
               <PreviewProblemTable
                 rows={readyAsPracticedProblems}
-                emptyCopy="No accepted problem rows are ready to import as practiced."
+                emptyCopy="No previously accepted problem rows are ready to import."
               />
             </details>
 
             <details className="mt-5 rounded-md border border-zinc-200 bg-zinc-50/70 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/50">
               <summary className="cursor-pointer text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-                Ready to schedule ({readyToScheduleProblems.length})
+                Attempted-only, not imported ({readyToScheduleProblems.length})
               </summary>
               <PreviewProblemTable
                 rows={readyToScheduleProblems}
-                emptyCopy="No attempted-only problem rows are ready to schedule."
+                emptyCopy="No attempted-only problem rows were found."
                 showResult
               />
             </details>
@@ -361,7 +424,7 @@ export function LeetCodeHistoryImportPreview({
                         </span>
                         <span className="ml-1 text-xs text-zinc-500 dark:text-zinc-500">
                           already tracked as {existingProblem.title}; parsed as{" "}
-                          {problem.importKind}
+                          {problem.importKind === "practiced" ? "previously accepted" : "attempted only"}
                         </span>
                       </li>
                     ),

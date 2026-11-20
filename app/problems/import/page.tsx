@@ -34,9 +34,8 @@ export default async function ProblemImportPage() {
               Preview LeetCode history
             </h1>
             <p className="max-w-2xl text-base leading-7 text-zinc-600 dark:text-zinc-400">
-              Paste your LeetCode Practice History text to see which accepted
-              problems the parser can extract. This preview does not save
-              anything yet.
+              Paste your LeetCode Practice History text, review the canonical
+              matches, and import accepted history without creating fake reviews.
             </p>
           </div>
           <Link

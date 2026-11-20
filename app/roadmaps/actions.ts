@@ -2,10 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { saveStudyPlanSettingsAction } from "@/app/study-settings/actions";
 import { createUserProblem } from "@/data/problems";
 import { neetcode150Problems } from "@/data/problem-sets/neetcode-150";
+import { getStudyPlanSettingsOverview } from "@/data/study-settings";
 import { getTrimmedStringField } from "@/lib/form-data";
 import { getLeetCodeProblemBySlug } from "@/lib/leetcode-catalog";
+import { createRoadmapFollowSettingsInput } from "@/lib/roadmaps";
+import type { StudyPlanApplyWhen } from "@/lib/study-plan-settings";
 import { createClient } from "@/lib/supabase/server";
 import {
   getDateOnlyInTimeZone,
@@ -97,7 +101,7 @@ export async function addRoadmapProblemAction(formData: FormData) {
     p_leetcode_topics: catalogProblem.topics,
     p_notes: "",
     p_start_mode: "scheduled",
-    p_rating: "good",
+    p_rating: "ok",
     p_start_date: startDate,
     p_time_zone: timeZone,
   });
@@ -127,7 +131,94 @@ export async function addRoadmapProblemAction(formData: FormData) {
   }
 
   revalidatePath("/roadmaps/neetcode-150");
+  revalidatePath("/roadmaps");
   revalidatePath("/dashboard");
   revalidatePath("/problems");
   redirect(`${returnTo}?message=roadmap_added`);
+}
+
+export type ChangeFollowedRoadmapInput = {
+  roadmapId: string | null;
+  applyWhen: StudyPlanApplyWhen;
+};
+
+export async function changeFollowedRoadmapAction(
+  input: ChangeFollowedRoadmapInput,
+) {
+  if (
+    !input ||
+    !["today", "tomorrow"].includes(input.applyWhen) ||
+    (input.roadmapId !== null &&
+      (typeof input.roadmapId !== "string" || !input.roadmapId.trim()))
+  ) {
+    return { ok: false as const, error: "invalid_settings" as const };
+  }
+
+  const supabase = await createClient();
+  const { data: claims, error: claimsError } = await supabase.auth.getClaims();
+  const userId = claims?.claims?.sub;
+  if (claimsError || !userId) {
+    return { ok: false as const, error: "not_authenticated" as const };
+  }
+
+  const overviewResult = await getStudyPlanSettingsOverview(supabase, userId);
+  if (overviewResult.error || !overviewResult.data) {
+    return { ok: false as const, error: "save_failed" as const };
+  }
+
+  const overview = overviewResult.data;
+  const roadmapId = input.roadmapId?.trim() || null;
+  if (
+    roadmapId &&
+    !overview.roadmaps.some((roadmap) => roadmap.id === roadmapId)
+  ) {
+    return { ok: false as const, error: "invalid_roadmap" as const };
+  }
+
+  const effective = overview.effective;
+  const base =
+    input.applyWhen === "today" && effective
+      ? {
+          dailyNewTarget: effective.daily_new_target,
+          dailyReviewTarget: effective.daily_review_target,
+          newSelectionMode:
+            effective.new_selection_mode === "shuffled"
+              ? ("shuffled" as const)
+              : ("sequential" as const),
+          reviewSource:
+            effective.review_source === "selected_roadmaps"
+              ? ("selected_roadmaps" as const)
+              : ("all" as const),
+          reviewRoadmapIds: effective.review_roadmap_ids,
+          timeZone: effective.time_zone,
+        }
+      : overview.latest
+        ? {
+            dailyNewTarget: overview.latest.dailyNewTarget,
+            dailyReviewTarget: overview.latest.dailyReviewTarget,
+            newSelectionMode: overview.latest.newSelectionMode,
+            reviewSource: overview.latest.reviewSource,
+            reviewRoadmapIds: overview.latest.reviewRoadmapIds,
+            timeZone: overview.latest.timeZone,
+          }
+        : null;
+
+  if (!base) {
+    return { ok: false as const, error: "settings_required" as const };
+  }
+
+  const result = await saveStudyPlanSettingsAction(
+    createRoadmapFollowSettingsInput(
+      base,
+      roadmapId,
+      input.applyWhen,
+    ),
+  );
+
+  if (result.ok) {
+    revalidatePath("/roadmaps");
+    revalidatePath("/roadmaps/neetcode-150");
+  }
+
+  return result;
 }
