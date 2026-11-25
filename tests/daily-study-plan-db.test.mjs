@@ -831,6 +831,8 @@ dbTest("rating correction updates the same attempt and recomputes its transition
   assert.equal(tasks(plan)[0].completed_review_event_id, eventId);
   assert.equal(execute(`select count(*) from public.review_events where user_problem_id='${selected}'`), "1");
   assert.equal(execute(`select rating from public.review_events where id='${eventId}'`), "ok");
+  assert.equal(execute(`select correctable_until - reviewed_at = interval '5 minutes'
+    from public.review_events where id='${eventId}'`), "t");
   assert.equal(execute(`select review_stage||','||mastery_score||','||total_reviews||','||schedule_version
     from public.user_problems where id='${selected}'`), "1,2,1,1");
 
@@ -838,6 +840,7 @@ dbTest("rating correction updates the same attempt and recomputes its transition
     `select row_to_json(result) from public.correct_review_rating('${eventId}','good') result`)));
   assert.equal(corrected.review_event_id, eventId);
   assert.equal(corrected.rating, "good");
+  assert.equal(corrected.correctable_until, initial.correctable_until);
   assert.equal(execute(`select count(*) from public.review_events where user_problem_id='${selected}'`), "1");
   assert.equal(execute(`select rating||','||new_review_stage from public.review_events where id='${eventId}'`), "good,2");
   assert.equal(execute(`select review_stage||','||mastery_score||','||total_reviews||','||schedule_version
@@ -852,7 +855,17 @@ dbTest("rating correction updates the same attempt and recomputes its transition
   const other = user();
   assert.throws(() => execute(authenticated(other,
     `select public.correct_review_rating('${eventId}','bad')`)), /not_found/);
-  execute(`update public.review_events set correctable_until=clock_timestamp()-interval '1 second' where id='${eventId}'`);
+  // Age the attempt and its deadline together, regardless of test execution speed.
+  execute(`with expired_attempt as (
+    update public.review_events
+    set reviewed_at=reviewed_at-interval '6 minutes',
+        correctable_until=correctable_until-interval '6 minutes',
+        corrected_at=corrected_at-interval '6 minutes'
+    where id='${eventId}'
+    returning user_problem_id, reviewed_at
+  )
+  update public.user_problems p set last_reviewed_at=expired_attempt.reviewed_at
+  from expired_attempt where p.id=expired_attempt.user_problem_id`);
   assert.throws(() => execute(authenticated(owner,
     `select public.correct_review_rating('${eventId}','bad')`)), /correction_expired/);
   assert.equal(execute(`select count(*) from public.review_events where user_problem_id='${selected}'`), "1");

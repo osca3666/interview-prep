@@ -76,7 +76,18 @@ test("recovery exchange failures use the reset page without retaining the code",
   assert.equal(response.location.includes("secret"), false);
 });
 
-test("successful recovery ignores submitted destinations and removes the code before finalization", async () => {
+test("successful recovery ignores submitted destinations and removes the code before finalization", async (t) => {
+  const canonicalOrigin = "https://interviewprep.example:8443";
+  const previousSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  t.after(() => {
+    if (previousSiteUrl === undefined) {
+      delete process.env.NEXT_PUBLIC_SITE_URL;
+    } else {
+      process.env.NEXT_PUBLIC_SITE_URL = previousSiteUrl;
+    }
+  });
+  process.env.NEXT_PUBLIC_SITE_URL = canonicalOrigin;
+
   const callback = loadCallback({ error: null });
   const response = await callback.GET(
     createRequest(
@@ -86,7 +97,7 @@ test("successful recovery ignores submitted destinations and removes the code be
 
   assert.equal(
     response.location,
-    "http://localhost/auth/recovery/complete",
+    `${canonicalOrigin}/auth/recovery/complete`,
   );
   assert.equal(response.location.includes("secret"), false);
 });
