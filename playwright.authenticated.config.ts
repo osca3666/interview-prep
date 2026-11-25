@@ -11,7 +11,7 @@ if (!supabaseUrl || !publishableKey) {
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testMatch: "v1-beta.e2e.spec.ts",
+  testMatch: ["v1-beta.e2e.spec.ts", "auth-recovery.e2e.spec.ts"],
   outputDir: "test-results/authenticated",
   fullyParallel: false,
   workers: 1,

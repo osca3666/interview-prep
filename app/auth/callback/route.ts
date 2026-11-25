@@ -1,4 +1,7 @@
-import { getSafeRedirectPath } from "@/lib/auth/redirect";
+import { getSafeRedirectPath, getSiteOrigin } from "@/lib/auth/redirect";
+import {
+  getAuthCallbackFlow,
+} from "@/lib/auth/recovery";
 import { createClient } from "@/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -36,12 +39,29 @@ function redirectToSignIn(
   return NextResponse.redirect(url);
 }
 
+function redirectToInvalidRecovery(request: NextRequest) {
+  const url = request.nextUrl.clone();
+  url.pathname = "/reset-password";
+  url.search = "";
+  url.searchParams.set("error", "invalid_recovery");
+  return NextResponse.redirect(url);
+}
+
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
-  const next = getSafeRedirectPath(request.nextUrl.searchParams.get("next"));
+  const flow = getAuthCallbackFlow(
+    request.nextUrl.searchParams.get("flow"),
+  );
+  const next =
+    flow === "recovery"
+      ? "/auth/recovery/complete"
+      : getSafeRedirectPath(request.nextUrl.searchParams.get("next"));
 
   if (!code) {
     logCallbackFailure(false, null);
+    if (flow === "recovery") {
+      return redirectToInvalidRecovery(request);
+    }
     return redirectToSignIn(request, "error", "invalid_callback");
   }
 
@@ -50,8 +70,11 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     logCallbackFailure(true, error);
-    return redirectToSignIn(request, "message", "email_confirmed");
+    if (flow === "recovery") {
+      return redirectToInvalidRecovery(request);
+    }
+    return redirectToSignIn(request, "error", "confirmation_failed");
   }
 
-  return NextResponse.redirect(new URL(next, request.url));
+  return NextResponse.redirect(new URL(next, await getSiteOrigin()));
 }

@@ -24,7 +24,7 @@ function required(name: string) {
 
 function assertLocalUrl(value: string) {
   const url = new URL(value);
-  if (!["127.0.0.1", "localhost"].includes(url.hostname) || url.port !== "54321") {
+  if (!["127.0.0.1", "localhost"].includes(url.hostname) || url.port !== "54121") {
     throw new Error(`Refusing non-local Supabase URL: ${url.origin}`);
   }
   return value;

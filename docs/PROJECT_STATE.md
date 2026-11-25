@@ -29,7 +29,7 @@ Core intended experience:
 - Authenticated application routes use one grid-backed, viewport-height left sidebar. The sidebar and main content share one width contract, so expanded/collapsed navigation cannot overlap the default content region. On narrow screens, the compact rail remains in the grid while explicit expansion overlays the content. Public and authentication routes retain a compact top header.
 - The shared navigation includes Dashboard, Problems, the Roadmaps browser, Study Plan settings, and Practice History Import. Analytics remains available as a direct authenticated route but is intentionally hidden from navigation. Active state is derived from the current App Router pathname.
 - Client Components are used for browser interaction, such as local search, theme toggles, timezone capture, and import preview parsing.
-- Supabase Auth and Postgres back the user data.
+- Supabase Auth and Postgres back the user data. Authentication includes a generic forgot-password request, a server-side PKCE recovery callback, and a guarded reset-password form. Callback failures no longer report successful confirmation, recovery destinations are fixed internal routes, and local Mailpit coverage exercises the flow without real email delivery.
 - Simple reads use Supabase `.select()` queries.
 - Important state transitions use a Next.js Server Action plus a protected Supabase RPC.
 - Generated Supabase TypeScript types are used for RPC args and table shapes.
@@ -290,13 +290,15 @@ Implemented parser behavior:
 
 Local V1 implementation, Phase 4A QA, and the Phase 4B beta database rollout are complete. Roadmap catalog breadth remains intentionally limited to NeetCode 150. InterviewPrep still runs as a local Next.js application connected to cloud Supabase beta; there is no hosted Next.js beta deployment yet.
 
+GitHub Actions CI is configured for pushes and pull requests to `main` on Node.js 24 LTS. It separates application test/lint/build checks from the 58 opt-in PostgreSQL tests and focused authenticated Playwright coverage. Database and browser jobs each start a fresh loopback Supabase stack on a disposable GitHub-hosted runner, use only its local credentials, and never link to or contact a cloud project. The database runner creates an additional empty, randomly named scratch database, applies the complete migration history there, requires zero skipped database tests, and removes it afterward. The first GitHub-hosted run still needs verification; no repository secrets are required.
+
 ## Recommended Next Slice
 
 Continue focused beta use through the local Next.js application, then decide whether to establish a hosted beta environment before payment work. Keep using disposable accounts for release smoke tests and verify the hosting environment targets the intended Supabase project before any future web deployment.
 
 ## Phase 4A Local End-to-End QA
 
-- QA used only the loopback Supabase stack (`127.0.0.1:54321` API and `127.0.0.1:54322` PostgreSQL) through process-scoped environment injection. The authenticated Playwright runner rejects non-loopback URLs. No cloud database or environment file was modified.
+- QA uses only the loopback Supabase stack (`127.0.0.1:54121` API, `127.0.0.1:54122` PostgreSQL, and `127.0.0.1:54124` Mailpit) through process-scoped environment injection. The authenticated Playwright runner rejects non-loopback URLs and verifies the configured local ports. No cloud database or environment file is modified.
 - Two fresh disposable scratch databases ran the complete migration history and all 58 opt-in PostgreSQL tests. True two-connection races cover review-first and Apply-today-first lock ordering; both preserve genuine events, exact allocation evidence, stable denominators, and historical task snapshots.
 - The authenticated Playwright suite covers real local signup/login/logout, onboarding, Sequential/Shuffled settings, roadmap follow/stop behavior, import without fake events, imported calibration, Bad/OK/Good, manual To-do, Skip today, recommendation insertion, persistence, analytics, Recent Activity, responsive themes, and shell geometry.
 - Confirmed defects fixed during QA: Apply-today-first manual practice could lose allocation credit; persisted checklist disclosure state caused hydration/remount races; initial plan refresh could detach Add Problem; narrow task metadata could overflow; and several browser assertions encoded superseded UI copy/order assumptions.
@@ -330,7 +332,7 @@ The current planner, unified same-day additions, Practice History import, Analyt
 - Phase 3B focused authenticated Playwright passed against local Supabase. It covers the truthful Suggested state, Apply-today Follow, preserved shuffled and selected-roadmap review settings, Start-tomorrow Stop, the scheduled-change message, detail-page state, and responsive light/dark rendering. Both roadmap screenshots were opened and inspected directly.
 - Phase 3B unit coverage verifies followed/suggested partitioning, no featured-roadmap duplication, genuine/imported progress, To-do exclusion, overlapping membership, exhausted-roadmap state, and preservation of independent settings.
 
-- Standard `npm test`: 184 passed, 0 failed, and 58 opt-in scratch-database tests skipped by the ordinary command (242 total). It includes the Phase 1 scheduling matrix plus always-on Phase 2A/2B/2C migration, type, policy-parity, deterministic-reconciliation, destructive-SQL guards, Phase 3A settings, Phase 3B roadmap coverage, and settings-capability/error-handling coverage.
+- Standard `npm test`: 194 passed, 0 failed, and 58 opt-in scratch-database tests skipped by the ordinary command (252 total). It includes the Phase 1 scheduling matrix plus always-on Phase 2A/2B/2C migration, type, policy-parity, deterministic-reconciliation, destructive-SQL guards, Phase 3A settings, Phase 3B roadmap coverage, authentication recovery, and settings-capability/error-handling coverage.
 - The same 58 opt-in PostgreSQL tests passed with 0 failures and 0 skips against a fresh isolated loopback scratch database. Both true concurrent lock-order tests passed.
 - Local `supabase db lint`: no schema errors across `extensions`, `private`, and `public` after the Phase 4A regression migration.
 - The rollback-only local PostgreSQL Phase 2B check passed against the Docker-backed Supabase database. It covers settings and empty-plan creation, V1 initial practice, same-event correction without duplication, imported provisional mastery, generated allocation evidence, exact task completion, and unchanged legacy initial-practice behavior.

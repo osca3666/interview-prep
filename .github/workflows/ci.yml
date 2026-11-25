@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: "true"
+  CI_NODE_VERSION: "24"
+  NEXT_TELEMETRY_DISABLED: "1"
+  NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54121
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-local-public-placeholder
+
+jobs:
+  quality:
+    name: Test, lint, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.CI_NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run application tests
+        run: npm test
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Build application
+        run: npm run build
+
+  database:
+    name: PostgreSQL integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.CI_NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: 3.2.0
+
+      - name: Start disposable local Supabase
+        shell: bash
+        run: |
+          if ! supabase start >"$RUNNER_TEMP/supabase-start.log" 2>&1; then
+            echo "::error::Disposable local Supabase failed to start."
+            docker ps --format 'table {{.Names}}\t{{.Status}}'
+            exit 1
+          fi
+
+      - name: Run PostgreSQL integration tests
+        run: npm run test:db:local
+
+      - name: Stop disposable local Supabase
+        if: always()
+        shell: bash
+        run: supabase stop --no-backup >/dev/null 2>&1 || true
+
+  browser:
+    name: Auth and onboarding browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.CI_NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: 3.2.0
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start disposable local Supabase
+        shell: bash
+        run: |
+          if ! supabase start >"$RUNNER_TEMP/supabase-start.log" 2>&1; then
+            echo "::error::Disposable local Supabase failed to start."
+            docker ps --format 'table {{.Names}}\t{{.Status}}'
+            exit 1
+          fi
+
+      - name: Run focused authenticated browser tests
+        shell: bash
+        run: |
+          # Browser failure output can contain disposable recovery links.
+          if ! npm run test:e2e:ci >"$RUNNER_TEMP/playwright.log" 2>&1; then
+            echo "::error::Browser tests failed. Reproduce with npm run test:e2e:ci against local Supabase."
+            exit 1
+          fi
+          echo "Focused authenticated Playwright suite passed."
+
+      - name: Stop disposable local Supabase
+        if: always()
+        shell: bash
+        run: supabase stop --no-backup >/dev/null 2>&1 || true

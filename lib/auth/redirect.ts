@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import type { AuthCallbackFlow } from "@/lib/auth/recovery";
 
 const fallbackOrigin = "http://localhost";
 
@@ -65,11 +66,15 @@ export async function getSiteOrigin() {
   return normalizeOrigin(`${protocol}://${host}`);
 }
 
-export async function getAuthCallbackUrl(nextPath = "/dashboard") {
+export async function getAuthCallbackUrl(
+  nextPath = "/dashboard",
+  flow: AuthCallbackFlow = "confirmation",
+) {
   const origin = await getSiteOrigin();
   const url = new URL("/auth/callback", origin);
 
   url.searchParams.set("next", getSafeRedirectPath(nextPath));
+  url.searchParams.set("flow", flow);
 
   return url.toString();
 }
@@ -80,6 +85,8 @@ export function getAuthErrorMessage(code: string | string[] | undefined) {
   switch (value) {
     case "invalid_callback":
       return "That confirmation link is missing required information.";
+    case "confirmation_failed":
+      return "That confirmation link is invalid or has expired. Please request a new one.";
     case "invalid_credentials":
       return "The email or password you entered is not correct.";
     case "rate_limited":

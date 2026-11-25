@@ -1,10 +1,17 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   getAuthCallbackUrl,
   getSafeRedirectPath,
 } from "@/lib/auth/redirect";
+import {
+  AUTH_MIN_PASSWORD_LENGTH,
+  getResetPasswordValidationError,
+  PASSWORD_RECOVERY_COOKIE,
+  PASSWORD_RECOVERY_COOKIE_VALUE,
+} from "@/lib/auth/recovery";
 import { createClient } from "@/lib/supabase/server";
 
 type SupabaseAuthError = {
@@ -28,10 +35,18 @@ function isValidEmail(value: string) {
 }
 
 function hasValidCredentials(email: string, password: string) {
-  return isValidEmail(email) && password.length >= 6;
+  return isValidEmail(email) && password.length >= AUTH_MIN_PASSWORD_LENGTH;
 }
 
-function logAuthError(operation: "sign-up" | "sign-in", error: SupabaseAuthError) {
+function logAuthError(
+  operation:
+    | "sign-up"
+    | "sign-in"
+    | "request-password-reset"
+    | "update-password"
+    | "sign-out-after-password-reset",
+  error: SupabaseAuthError,
+) {
   if (process.env.NODE_ENV === "production") {
     return;
   }
@@ -71,6 +86,16 @@ function shouldTreatSignupErrorAsRateLimited(error: SupabaseAuthError) {
   return !code && message.includes("rate limit");
 }
 
+function clearPasswordRecoveryCookie(cookieStore: Awaited<ReturnType<typeof cookies>>) {
+  cookieStore.set(PASSWORD_RECOVERY_COOKIE, "", {
+    httpOnly: true,
+    maxAge: 0,
+    path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+}
+
 export async function signUpAction(formData: FormData) {
   const email = getTextField(formData, "email").toLowerCase();
   const password = getPasswordField(formData, "password");
@@ -80,7 +105,10 @@ export async function signUpAction(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const emailRedirectTo = await getAuthCallbackUrl("/study-plan/setup");
+  const emailRedirectTo = await getAuthCallbackUrl(
+    "/study-plan/setup",
+    "confirmation",
+  );
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -142,4 +170,84 @@ export async function signOutAction() {
   }
 
   redirect("/sign-in");
+}
+
+export async function requestPasswordResetAction(formData: FormData) {
+  const email = getTextField(formData, "email").toLowerCase();
+
+  if (!isValidEmail(email)) {
+    redirect("/forgot-password?error=validation");
+  }
+
+  const supabase = await createClient();
+  const redirectTo = await getAuthCallbackUrl("/reset-password", "recovery");
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo,
+  });
+
+  if (error) {
+    logAuthError("request-password-reset", error);
+
+    if (shouldTreatSignupErrorAsRateLimited(error)) {
+      redirect("/forgot-password?error=rate_limited");
+    }
+
+    redirect("/forgot-password?error=request_failed");
+  }
+
+  redirect("/forgot-password?message=check_email");
+}
+
+export async function resetPasswordAction(formData: FormData) {
+  const password = getPasswordField(formData, "password");
+  const confirmation = getPasswordField(formData, "password_confirmation");
+  const validationError = getResetPasswordValidationError(
+    password,
+    confirmation,
+  );
+
+  if (validationError) {
+    redirect(`/reset-password?error=${validationError}`);
+  }
+
+  const cookieStore = await cookies();
+  const recoveryMarker = cookieStore.get(PASSWORD_RECOVERY_COOKIE)?.value;
+
+  if (recoveryMarker !== PASSWORD_RECOVERY_COOKIE_VALUE) {
+    redirect("/reset-password?error=invalid_recovery");
+  }
+
+  const supabase = await createClient();
+  const claimsResult = await supabase.auth.getClaims();
+
+  if (claimsResult.error || !claimsResult.data?.claims) {
+    clearPasswordRecoveryCookie(cookieStore);
+    redirect("/reset-password?error=invalid_recovery");
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    logAuthError("update-password", error);
+
+    if (
+      error.code === "session_not_found" ||
+      error.code === "refresh_token_not_found" ||
+      error.status === 401
+    ) {
+      clearPasswordRecoveryCookie(cookieStore);
+      redirect("/reset-password?error=invalid_recovery");
+    }
+
+    redirect("/reset-password?error=update_failed");
+  }
+
+  clearPasswordRecoveryCookie(cookieStore);
+  const signOutResult = await supabase.auth.signOut({ scope: "local" });
+
+  if (signOutResult.error) {
+    logAuthError("sign-out-after-password-reset", signOutResult.error);
+  }
+
+  redirect("/reset-password?message=password_updated");
 }

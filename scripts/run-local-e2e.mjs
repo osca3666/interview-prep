@@ -9,11 +9,11 @@ let local;
 try {
   local = getLocalSupabaseStatus();
   assertLoopbackUrl(local.API_URL, {
-    expectedPort: 54321,
+    expectedPort: 54121,
     label: "Supabase API",
   });
   assertLoopbackUrl(local.DB_URL, {
-    expectedPort: 54322,
+    expectedPort: 54122,
     expectedPath: "/postgres",
     label: "Supabase database",
   });
@@ -26,8 +26,25 @@ try {
 
 const localEnvironment = getLocalPublicSupabaseEnvironment(local);
 const serviceRoleKey = local.SERVICE_ROLE_KEY || local.SECRET_KEY;
+const mailpitUrl = local.MAILPIT_URL || local.INBUCKET_URL;
 if (!serviceRoleKey) {
   process.stderr.write("Local Supabase did not provide an E2E service key.\n");
+  process.exit(1);
+}
+if (!mailpitUrl) {
+  process.stderr.write("Local Supabase did not provide a Mailpit URL.\n");
+  process.exit(1);
+}
+
+try {
+  assertLoopbackUrl(mailpitUrl, {
+    expectedPort: 54124,
+    label: "Supabase Mailpit",
+  });
+} catch (error) {
+  process.stderr.write(
+    `${error instanceof Error ? error.message : "Local Mailpit setup failed."}\n`,
+  );
   process.exit(1);
 }
 
@@ -46,6 +63,7 @@ const result = spawnSync(
       E2E_SUPABASE_PUBLISHABLE_KEY:
         localEnvironment.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
       E2E_SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey,
+      E2E_MAILPIT_URL: mailpitUrl,
     },
   },
 );

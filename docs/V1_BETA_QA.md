@@ -20,8 +20,8 @@ npm run test:e2e -- --grep "Practice History"
 
 ## Safety Boundary
 
-- Local API must be `127.0.0.1:54321` or `localhost:54321`.
-- Local database status must point to `127.0.0.1:54322/postgres`.
+- Local API must be `127.0.0.1:54121` or `localhost:54121`.
+- Local database status must point to `127.0.0.1:54122/postgres`.
 - Supabase keys are passed to the child process in memory and are not written to files.
 - Test users use `example.test` addresses and are deleted after the suite.
 - Auth is real local GoTrue auth; the Analytics demo bypass is disabled.

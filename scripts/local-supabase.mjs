@@ -27,12 +27,20 @@ export function assertLoopbackUrl(
 }
 
 export function getLocalSupabaseStatus() {
-  const npx = process.platform === "win32" ? "npx.cmd" : "npx";
-  const status = spawnSync(npx, ["supabase", "status", "-o", "json"], {
+  const isWindows = process.platform === "win32";
+  const args = ["status", "-o", "json"];
+  const options = {
     cwd: process.cwd(),
     encoding: "utf8",
-    shell: process.platform === "win32",
-  });
+  };
+  const installedCli = isWindows ? null : spawnSync("supabase", args, options);
+  const status =
+    !installedCli || installedCli.error?.code === "ENOENT"
+      ? spawnSync(isWindows ? "npx.cmd" : "npx", ["supabase", ...args], {
+          ...options,
+          shell: isWindows,
+        })
+      : installedCli;
 
   if (status.status !== 0 || status.error) {
     throw new Error(
